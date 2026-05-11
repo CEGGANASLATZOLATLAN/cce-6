@@ -1,4 +1,4 @@
-#  LearnWords — 6 Sefer Kelime Ezberleme Sistemi
+#  LearnWords — 6 Sefer Kelime Ezberleme Sistemi(Okul projesi)
 
 Scrum metodolojisiyle geliştirilen, aralıklı tekrar (spaced repetition) yöntemiyle
 kalıcı kelime öğrenmeyi sağlayan web uygulaması.
@@ -32,7 +32,7 @@ Tarayıcıda aç: **http://localhost:5001** veya **http://127.0.0.1:5001/**
 Bir kelimeyi kalıcı öğrenmek için 6 farklı zaman diliminde doğru cevaplanması gerekir:
 
 ```
-İlk Doğru → 1 Gün → 1 Hafta → 1 Ay → 3 Ay → 6 Ay → 1 Yıl → ✅ Öğrenildi
+İlk Doğru → 1 Gün → 1 Hafta → 1 Ay → 3 Ay → 6 Ay → 1 Yıl →  Öğrenildi
 ```
 
 Herhangi bir aşamada yanlış cevap verilirse süreç **sıfırdan** başlar.
