@@ -1,4 +1,4 @@
-# ⚡ LearnWords — 6 Sefer Kelime Ezberleme Sistemi
+#  LearnWords — 6 Sefer Kelime Ezberleme Sistemi
 
 Scrum metodolojisiyle geliştirilen, aralıklı tekrar (spaced repetition) yöntemiyle
 kalıcı kelime öğrenmeyi sağlayan web uygulaması.
