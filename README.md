@@ -40,16 +40,16 @@ Herhangi bir aşamada yanlış cevap verilirse süreç **sıfırdan** başlar.
 ## Veritabanı Şeması
 
 ```
-Users         : UserID, UserName, Password, Email, words_per_day
-Words         : WordID, EngWordName, TurWordName, Picture, Audio
-WordSamples   : WordSamplesID, WordID, Sample
+Users            : UserID, UserName, Password, Email, words_per_day
+Words            : WordID, EngWordName, TurWordName, Picture, Audio
+WordSamples      : WordSamplesID, WordID, Sample
 UserWordProgress : UserID, WordID, Stage(0-6), next_review, is_learned
-QuizAnswers   : UserID, WordID, is_correct, quiz_date, stage_before
+QuizAnswers      : UserID, WordID, is_correct, quiz_date, stage_before
 ```
 
 ## Teknolojiler
 
-- **Backend:** Python / Flask
+- **Backend:**    Python / Flask
 - **Veritabanı:** SQLite (SQLAlchemy ORM)
-- **Frontend:** Bootstrap 5, Vanilla JS
-- **Şifreleme:** Werkzeug (bcrypt hash)
+- **Frontend:**   Bootstrap 5, Vanilla JS
+- **Şifreleme:**  Werkzeug (bcrypt hash)
