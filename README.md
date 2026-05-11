@@ -18,14 +18,14 @@ kalıcı kelime öğrenmeyi sağlayan web uygulaması.
 ## Kurulum
 
 ```bash
-# 1. Gerekli paketleri kur
+# 1. Gerekli paketleri kurmak için;
 pip install flask flask-sqlalchemy werkzeug
 
-# 2. Uygulamayı başlat
+# 2. Uygulamayı başlatmak için;
 python app.py
 ```
 
-Tarayıcıda aç: **http://localhost:5001**
+Tarayıcıda aç: **http://localhost:5001** veya **http://127.0.0.1:5001/**
 
 ## 6 Sefer Algoritması
 
