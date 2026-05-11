@@ -1,0 +1,29 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python3 -m venv venv)",
+      "Bash(curl -s -b /tmp/c2.txt -c /tmp/c2.txt -L http://localhost:5001/quiz/question)",
+      "Bash(pkill -f \"python3 app.py\")",
+      "Bash(python3 app.py)",
+      "Bash(curl -s -b /tmp/c2.txt http://localhost:5001/wordle)",
+      "Bash(curl -s -b /tmp/c2.txt -L http://localhost:5001/quiz/question)",
+      "Bash(ps -p 10367 -o command=)",
+      "Bash(kill 10367)",
+      "Bash(pkill -f \"from app import\")",
+      "Bash(curl -s http://localhost:5001/wordle)",
+      "Bash(curl -s -c /tmp/wc.txt -X POST http://localhost:5001/login -d 'username=testuser&password=1234' -o /dev/null)",
+      "Bash(curl -s -b /tmp/wc.txt -c /tmp/wc.txt http://localhost:5001/wordle)",
+      "Bash(pkill -f \"python.*app.py\")",
+      "Bash(curl -s \"https://infinitytechstack.uk/\")",
+      "Bash(curl -s \"https://infinitytechstack.uk/_next/static/css/140e48a92516b9de.css?dpl=dpl_9Vu9VxVSdih6rsfP4QZ6pgmy9djS\")",
+      "Bash(grep -oE 'style=\"[^\"]{1,500}\"')",
+      "Bash(curl -s \"https://infinitytechstack.uk/_next/static/chunks/app/layout-5bb656ee830ea5bf.js?dpl=dpl_9Vu9VxVSdih6rsfP4QZ6pgmy9djS\")",
+      "Read(//tmp/**)",
+      "Bash(curl -s -o /dev/null -w \"HTTP %{http_code}\" http://localhost:5001/)",
+      "Bash(pkill -9 -f \"python.*app.py\")",
+      "Bash(curl -s \"http://localhost:5001/wordle\" -b \"session=test\")",
+      "Bash(curl -s \"http://localhost:5001/wordle\")",
+      "Bash(python3 -c ' *)"
+    ]
+  }
+}

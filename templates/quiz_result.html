@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+{% block title %}Sınav Sonucu{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-7">
+
+    <!-- Score Card -->
+    <div class="card bracket-card text-center mb-4"
+         style="--card-accent:{% if pct >= 80 %}#39ff14{% elif pct >= 50 %}#f59e0b{% else %}#ef4444{% endif %};">
+      <span class="corner corner-tl"></span>
+      <span class="corner corner-tr"></span>
+      <span class="corner corner-bl"></span>
+      <span class="corner corner-br"></span>
+      <div class="card-body py-5">
+        <div class="eyebrow mb-2">// sınav sonucu</div>
+        <div style="font-family:var(--mono);font-size:4.5rem;font-weight:900;line-height:1;
+                    color:{% if pct >= 80 %}#39ff14{% elif pct >= 50 %}#f59e0b{% else %}#ef4444{% endif %};
+                    text-shadow:0 0 30px {% if pct >= 80 %}rgba(57,255,20,.5){% elif pct >= 50 %}rgba(245,158,11,.5){% else %}rgba(239,68,68,.5){% endif %};">
+          {{ pct }}%
+        </div>
+        <div style="font-family:var(--mono);font-size:.9rem;color:var(--text-secondary);margin-top:.5rem;">
+          {{ correct }} / {{ total }} doğru cevap
+        </div>
+        <div class="mt-3" style="font-size:1.1rem;">
+          {% if pct == 100 %}🏆 Mükemmel! Tüm sorular doğru!
+          {% elif pct >= 80 %}⭐ Harika gidiyorsun!
+          {% elif pct >= 50 %}👍 İyi, biraz daha çalış!
+          {% else %}💪 Devam et, pratik şampiyona götürür!{% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Results List -->
+    <div class="card bracket-card mb-4" style="--card-accent:#8b5cf6;">
+      <span class="corner corner-tl"></span>
+      <span class="corner corner-tr"></span>
+      <span class="corner corner-bl"></span>
+      <span class="corner corner-br"></span>
+      <div class="card-header d-flex align-items-center gap-2">
+        <div class="eyebrow" style="margin:0;">// sonuç detayları</div>
+      </div>
+      <div class="card-body p-0">
+        <div class="list-group list-group-flush">
+          {% for wid, r in results.items() %}
+          <div class="list-group-item d-flex align-items-center gap-3 py-3 px-4">
+            <div style="font-size:1.1rem;">
+              {% if r.correct %}
+                <i class="bi bi-check-circle-fill" style="color:#39ff14;filter:drop-shadow(0 0 6px rgba(57,255,20,.5));"></i>
+              {% else %}
+                <i class="bi bi-x-circle-fill" style="color:#ef4444;filter:drop-shadow(0 0 6px rgba(239,68,68,.5));"></i>
+              {% endif %}
+            </div>
+            {% if r.picture %}
+            <img src="{{ url_for('static', filename='uploads/words/' + r.picture) }}"
+                 style="width:38px;height:38px;object-fit:cover;border-radius:3px;border:1px solid var(--border);" alt=""/>
+            {% endif %}
+            <div class="flex-grow-1">
+              <div style="font-family:var(--mono);font-weight:800;font-size:.9rem;color:var(--text-primary);">{{ r.eng | upper }}</div>
+              {% if not r.correct %}
+              <div style="font-family:var(--mono);font-size:.7rem;color:#ef4444;">
+                Senin cevabın: <em>{{ r.chosen }}</em>
+              </div>
+              {% endif %}
+            </div>
+            <div class="text-end">
+              <span class="badge" style="background:rgba(57,255,20,.12);color:#39ff14;border:1px solid rgba(57,255,20,.25);">
+                {{ r.answer }}
+              </span>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <div class="d-flex gap-3 justify-content-center">
+      <a href="{{ url_for('index') }}" class="btn btn-primary px-4">
+        <i class="bi bi-house me-2"></i>Ana Sayfa
+      </a>
+      <a href="{{ url_for('report') }}" class="btn btn-outline-secondary px-4">
+        <i class="bi bi-bar-chart me-2"></i>Raporu Gör
+      </a>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

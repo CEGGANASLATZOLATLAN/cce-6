@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% block title %}Kelime Düzenle{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-7">
+    <div class="d-flex align-items-center mb-4">
+      <a href="{{ url_for('words_list') }}" class="btn btn-sm btn-outline-secondary me-3">
+        <i class="bi bi-arrow-left"></i>
+      </a>
+      <h2 class="fw-bold mb-0"><i class="bi bi-pencil me-2 text-primary"></i>Kelime Düzenle</h2>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+      <div class="card-body p-4">
+        <form method="POST" enctype="multipart/form-data">
+
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <label class="form-label fw-medium">İngilizce Kelime</label>
+              <input type="text" name="eng_word" class="form-control"
+                     value="{{ word.eng_word }}" required/>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-medium">Türkçe Karşılık</label>
+              <input type="text" name="tur_word" class="form-control"
+                     value="{{ word.tur_word }}" required/>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-medium">Resim</label>
+            {% if word.picture %}
+              <div class="mb-2">
+                <img src="{{ url_for('static', filename='uploads/words/' + word.picture) }}"
+                     class="rounded" style="max-height:120px;" alt="mevcut resim"/>
+                <div class="text-muted small mt-1">Yeni resim yükleyerek değiştirebilirsin</div>
+              </div>
+            {% endif %}
+            <input type="file" name="picture" class="form-control" accept="image/*"/>
+          </div>
+
+          <div class="mb-4">
+            <label class="form-label fw-medium">Örnek Cümleler</label>
+            <div id="samples-container">
+              {% for s in word.samples %}
+              <div class="input-group mb-2 sample-row">
+                <span class="input-group-text bg-light text-muted small">{{ loop.index }}</span>
+                <input type="text" name="samples" class="form-control" value="{{ s.sample }}"/>
+                <button type="button" class="btn btn-outline-danger btn-sm" onclick="removeRow(this)">
+                  <i class="bi bi-x"></i>
+                </button>
+              </div>
+              {% endfor %}
+            </div>
+            <button type="button" class="btn btn-outline-secondary btn-sm mt-1" onclick="addSample()">
+              <i class="bi bi-plus me-1"></i>Örnek Ekle
+            </button>
+          </div>
+
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary px-4 fw-semibold">
+              <i class="bi bi-check-lg me-2"></i>Kaydet
+            </button>
+            <a href="{{ url_for('words_list') }}" class="btn btn-outline-secondary px-4">İptal</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let count = {{ word.samples|length }};
+function addSample() {
+  count++;
+  const c = document.getElementById('samples-container');
+  const d = document.createElement('div');
+  d.className = 'input-group mb-2 sample-row';
+  d.innerHTML = `<span class="input-group-text bg-light text-muted small">${count}</span>
+    <input type="text" name="samples" class="form-control" placeholder="Örnek cümle..."/>
+    <button type="button" class="btn btn-outline-danger btn-sm" onclick="removeRow(this)"><i class="bi bi-x"></i></button>`;
+  c.appendChild(d);
+}
+function removeRow(btn) { btn.closest('.sample-row').remove(); }
+</script>
+{% endblock %}

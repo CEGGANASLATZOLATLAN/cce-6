@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+{% block title %}Kelime Ekle{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-7">
+    <div class="d-flex align-items-center mb-4">
+      <a href="{{ url_for('words_list') }}" class="btn btn-sm btn-outline-secondary me-3">
+        <i class="bi bi-arrow-left"></i>
+      </a>
+      <h2 class="fw-bold mb-0"><i class="bi bi-plus-circle me-2 text-primary"></i>Yeni Kelime Ekle</h2>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+      <div class="card-body p-4">
+        <form method="POST" enctype="multipart/form-data">
+
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <label class="form-label fw-medium">İngilizce Kelime <span class="text-danger">*</span></label>
+              <input type="text" name="eng_word" class="form-control"
+                     placeholder="örn: apple" required autofocus/>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-medium">Türkçe Karşılık <span class="text-danger">*</span></label>
+              <input type="text" name="tur_word" class="form-control"
+                     placeholder="örn: elma" required/>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-medium">
+              <i class="bi bi-image me-1 text-muted"></i>Resim
+              <span class="text-muted small">(isteğe bağlı)</span>
+            </label>
+            <input type="file" name="picture" class="form-control" accept="image/*"
+                   onchange="previewImage(this)"/>
+            <div id="img-preview" class="mt-2 d-none">
+              <img id="preview-img" src="" class="rounded" style="max-height:150px;"/>
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <label class="form-label fw-medium">
+              <i class="bi bi-chat-quote me-1 text-muted"></i>Örnek Cümleler
+              <span class="text-muted small">(isteğe bağlı)</span>
+            </label>
+            <div id="samples-container">
+              <div class="input-group mb-2 sample-row">
+                <span class="input-group-text bg-light text-muted small">1</span>
+                <input type="text" name="samples" class="form-control"
+                       placeholder="The apple is red."/>
+                <button type="button" class="btn btn-outline-danger btn-sm" onclick="removeRow(this)">
+                  <i class="bi bi-x"></i>
+                </button>
+              </div>
+            </div>
+            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="addSample()">
+              <i class="bi bi-plus me-1"></i>Örnek Ekle
+            </button>
+          </div>
+
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary px-4 fw-semibold">
+              <i class="bi bi-check-lg me-2"></i>Kelimeyi Kaydet
+            </button>
+            <a href="{{ url_for('words_list') }}" class="btn btn-outline-secondary px-4">İptal</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let sampleCount = 1;
+
+function addSample() {
+  sampleCount++;
+  const container = document.getElementById('samples-container');
+  const div = document.createElement('div');
+  div.className = 'input-group mb-2 sample-row';
+  div.innerHTML = `
+    <span class="input-group-text bg-light text-muted small">${sampleCount}</span>
+    <input type="text" name="samples" class="form-control" placeholder="Örnek cümle..."/>
+    <button type="button" class="btn btn-outline-danger btn-sm" onclick="removeRow(this)">
+      <i class="bi bi-x"></i>
+    </button>`;
+  container.appendChild(div);
+}
+
+function removeRow(btn) {
+  btn.closest('.sample-row').remove();
+}
+
+function previewImage(input) {
+  const preview = document.getElementById('img-preview');
+  const img = document.getElementById('preview-img');
+  if (input.files && input.files[0]) {
+    const reader = new FileReader();
+    reader.onload = e => { img.src = e.target.result; preview.classList.remove('d-none'); };
+    reader.readAsDataURL(input.files[0]);
+  }
+}
+</script>
+{% endblock %}

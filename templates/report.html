@@ -1,0 +1,312 @@
+{% extends 'base.html' %}
+{% block title %}Analiz Raporu{% endblock %}
+
+{% block content %}
+
+  <!-- ── Header ── -->
+  <div class="d-flex justify-content-between align-items-center mb-4 no-print">
+    <div>
+      <div class="eyebrow mb-2">// analiz</div>
+      <h2 class="fw-bold mb-0" style="letter-spacing:-.02em;">
+        <i class="bi bi-bar-chart me-2 text-primary"></i>Rapor
+      </h2>
+    </div>
+    <button onclick="window.print()" class="btn btn-outline-secondary btn-sm">
+      <i class="bi bi-printer me-1"></i>Yazdır
+    </button>
+  </div>
+
+  <!-- Print Header -->
+  <div class="print-only text-center mb-4">
+    <h2>⚡ CCE — Analiz Raporu</h2>
+    <p>Kullanıcı: {{ session.username }} | Tarih: {{ now.strftime('%d.%m.%Y') if now else '' }}</p>
+    <hr/>
+  </div>
+
+  <!-- ── 4'lü Stat Satırı ── -->
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+      <div class="rp-stat" style="--c:#8b5cf6;--cr:139,92,246;">
+        <div class="rp-stat-key">Toplam Cevap</div>
+        <div class="rp-stat-val">{{ total_answers }}</div>
+        <div class="rp-stat-bar"><div class="rp-stat-fill"></div></div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="rp-stat" style="--c:#39ff14;--cr:57,255,20;">
+        <div class="rp-stat-key">Genel Başarı</div>
+        <div class="rp-stat-val">{{ overall_pct }}<span style="font-size:1rem;opacity:.4;">%</span></div>
+        <div class="rp-stat-bar"><div class="rp-stat-fill" data-pct="{{ overall_pct }}"></div></div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="rp-stat" style="--c:#f59e0b;--cr:245,158,11;">
+        <div class="rp-stat-key">Doğru Cevap</div>
+        <div class="rp-stat-val">{{ correct_all }}</div>
+        <div class="rp-stat-bar"><div class="rp-stat-fill"></div></div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="rp-stat" style="--c:#00f0ff;--cr:0,240,255;">
+        <div class="rp-stat-key">Öğrenilen Kelime</div>
+        <div class="rp-stat-val">{{ learned_count }}</div>
+        <div class="rp-stat-bar"><div class="rp-stat-fill"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Orta Alan: Aşama + Aktivite Yan Yana ── -->
+  <div class="row g-3 mb-4">
+
+    <!-- Aşama Dağılımı -->
+    <div class="col-12 col-md-7">
+      <div class="rp-panel h-100">
+        <div class="eyebrow mb-3">[ Aşama Dağılımı ]</div>
+        {% set stage_colors = ['#94a3b8','#a78bfa','#67e8f9','#fde68a','#fdba74','#d8b4fe','#818cf8','#6ee7b7'] %}
+        {% set stage_names  = ['Yeni','1. Gün','1. Hafta','1. Ay','3. Ay','6. Ay','1. Yıl','Öğrenildi'] %}
+        {% set stage_icons  = ['⭐','🔥','💫','⚡','🌙','🌟','🚀','✅'] %}
+        {% set total_words  = stage_data.values()|sum %}
+        <div class="d-flex flex-column gap-2">
+          {% for i in range(8) %}
+          {% set cnt = stage_data.get(i, 0) %}
+          {% set pct = ((cnt / total_words * 100)|round(0)|int) if total_words > 0 else 0 %}
+          <div class="rp-stage-row" style="--sc:{{ stage_colors[i] }};">
+            <span class="rp-stage-emoji">{{ stage_icons[i] }}</span>
+            <span class="rp-stage-name">{{ stage_names[i] }}</span>
+            <div class="rp-stage-bar">
+              <div class="rp-stage-fill" style="width:{{ pct }}%;"></div>
+            </div>
+            <span class="rp-stage-pct">{{ pct }}%</span>
+            <span class="rp-stage-cnt">{{ cnt }}</span>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Son Aktivite -->
+    <div class="col-12 col-md-5 no-print">
+      <div class="rp-panel h-100">
+        <div class="eyebrow mb-3">[ Son Aktivite ]</div>
+        {% if recent %}
+        <div class="d-flex flex-column gap-1">
+          {% for a in recent %}
+          <div class="rp-activity-row">
+            <span class="rp-activity-dot {% if a.is_correct %}rp-dot-green{% else %}rp-dot-red{% endif %}"></span>
+            <span class="rp-activity-word">{{ a.word.eng_word if a.word else '?' }}</span>
+            <span class="rp-activity-time">{{ a.answered_at.strftime('%d.%m %H:%M') }}</span>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div style="color:var(--text-muted);font-family:var(--mono);font-size:.75rem;padding-top:.5rem;">
+          Henüz aktivite yok.
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── Kelime Bazlı Başarı (tam genişlik) ── -->
+  <div class="eyebrow mb-3">[ Kelime Bazlı Başarı ]</div>
+  {% if word_stats %}
+  <div class="rp-panel mb-4" style="padding:0;overflow:hidden;">
+  <div class="rp-word-list" style="max-height:420px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--border-light) transparent;">
+    {% for ws in word_stats %}
+    <div class="rp-word-row">
+      <div class="rp-word-main">
+        <span class="rp-word-eng">{{ ws.word.eng_word }}</span>
+        <span class="rp-word-tur">{{ ws.word.tur_word }}</span>
+      </div>
+      <div class="rp-word-right">
+        <div class="rp-word-bar">
+          <div class="rp-word-fill {% if ws.pct >= 80 %}rp-green{% elif ws.pct >= 50 %}rp-yellow{% else %}rp-red{% endif %}"
+               style="width:{{ ws.pct }}%;"></div>
+        </div>
+        <span class="rp-word-pct {% if ws.pct >= 80 %}rp-green{% elif ws.pct >= 50 %}rp-yellow{% else %}rp-red{% endif %}">{{ ws.pct }}%</span>
+        {% if ws.learned %}
+          <span class="rp-word-badge rp-badge-green">✅ Öğrenildi</span>
+        {% else %}
+          <span class="rp-word-badge rp-badge-dim">{{ STAGE_LABELS.get(ws.stage, '?') }}</span>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  </div>
+  {% else %}
+  <div class="text-center py-4" style="color:var(--text-muted);font-family:var(--mono);font-size:.8rem;">
+    Henüz sınav yapılmadı.
+  </div>
+  {% endif %}
+
+{% endblock %}
+
+{% block scripts %}
+<style>
+/* ── Stat cards ── */
+.rp-stat {
+  background: rgba(var(--cr),.04);
+  border: 1px solid rgba(var(--cr),.15);
+  border-radius: 10px;
+  padding: 1rem 1.1rem .8rem;
+  position: relative;
+  overflow: hidden;
+  transition: border-color .2s, background .2s;
+}
+.rp-stat::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--c), transparent);
+  opacity: .6;
+}
+.rp-stat:hover { background: rgba(var(--cr),.08); border-color: rgba(var(--cr),.3); }
+.rp-stat-key {
+  font-family: var(--mono);
+  font-size: .55rem;
+  letter-spacing: .15em;
+  color: var(--c);
+  opacity: .6;
+  text-transform: uppercase;
+  margin-bottom: .4rem;
+}
+.rp-stat-val {
+  font-family: var(--mono);
+  font-size: 2rem;
+  font-weight: 900;
+  color: var(--c);
+  line-height: 1;
+  margin-bottom: .6rem;
+  text-shadow: 0 0 20px rgba(var(--cr),.4);
+}
+.rp-stat-bar { height: 2px; background: rgba(var(--cr),.1); border-radius: 2px; overflow: hidden; }
+.rp-stat-fill {
+  height: 100%; width: 0%; border-radius: 2px;
+  background: linear-gradient(90deg, rgba(var(--cr),.4), var(--c));
+  transition: width 1.2s cubic-bezier(.4,0,.2,1);
+  box-shadow: 0 0 6px var(--c);
+}
+
+/* ── Panel kutusu ── */
+.rp-panel {
+  background: rgba(255,255,255,.015);
+  border: 1px solid rgba(255,255,255,.06);
+  border-radius: 12px;
+  padding: 1.2rem 1.3rem;
+}
+
+/* ── Stage rows ── */
+.rp-stage-row {
+  display: flex;
+  align-items: center;
+  gap: .7rem;
+  padding: .4rem .6rem;
+  border-radius: 6px;
+  transition: background .15s;
+}
+.rp-stage-row:hover { background: rgba(255,255,255,.03); }
+.rp-stage-emoji { font-size: .95rem; width: 20px; text-align: center; flex-shrink: 0; }
+.rp-stage-name {
+  font-family: var(--mono);
+  font-size: .68rem;
+  color: var(--sc);
+  width: 65px;
+  flex-shrink: 0;
+}
+.rp-stage-bar {
+  flex: 1;
+  height: 4px;
+  background: rgba(255,255,255,.06);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.rp-stage-fill {
+  height: 100%;
+  background: var(--sc);
+  border-radius: 4px;
+  box-shadow: 0 0 5px var(--sc);
+  transition: width 1s cubic-bezier(.4,0,.2,1);
+  width: 0%;
+}
+.rp-stage-pct {
+  font-family: var(--mono);
+  font-size: .6rem;
+  color: var(--text-muted);
+  width: 30px;
+  text-align: right;
+  flex-shrink: 0;
+}
+.rp-stage-cnt {
+  font-family: var(--mono);
+  font-size: .72rem;
+  font-weight: 700;
+  color: var(--sc);
+  width: 24px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+/* ── Activity rows ── */
+.rp-activity-row {
+  display: flex;
+  align-items: center;
+  gap: .7rem;
+  padding: .45rem .6rem;
+  border-radius: 6px;
+  transition: background .15s;
+}
+.rp-activity-row:hover { background: rgba(255,255,255,.03); }
+.rp-activity-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.rp-dot-green { background: var(--green); box-shadow: 0 0 5px var(--green); }
+.rp-dot-red   { background: var(--red);   box-shadow: 0 0 5px var(--red); }
+.rp-activity-word { font-weight: 600; font-size: .82rem; color: var(--text-primary); flex: 1; }
+.rp-activity-time { font-family: var(--mono); font-size: .62rem; color: var(--text-muted); }
+
+/* ── Word list ── */
+.rp-word-list {
+  border: 1px solid rgba(255,255,255,.05);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.rp-word-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: .6rem 1rem;
+  border-bottom: 1px solid rgba(255,255,255,.03);
+  transition: background .15s;
+}
+.rp-word-row:last-child { border-bottom: none; }
+.rp-word-row:hover { background: rgba(255,255,255,.03); }
+.rp-word-main { flex: 1; min-width: 0; }
+.rp-word-eng { display: block; font-weight: 700; font-size: .85rem; color: var(--accent-light); }
+.rp-word-tur { display: block; font-family: var(--mono); font-size: .68rem; color: var(--cyan); opacity: .7; }
+.rp-word-right { display: flex; align-items: center; gap: .6rem; flex-shrink: 0; }
+.rp-word-bar { width: 70px; height: 3px; background: rgba(255,255,255,.06); border-radius: 3px; overflow: hidden; }
+.rp-word-fill { height: 100%; border-radius: 3px; }
+.rp-green  { background: var(--green)  !important; color: var(--green)  !important; }
+.rp-yellow { background: var(--yellow) !important; color: var(--yellow) !important; }
+.rp-red    { background: var(--red)    !important; color: var(--red)    !important; }
+.rp-word-pct { font-family: var(--mono); font-size: .65rem; font-weight: 700; width: 34px; text-align: right; }
+.rp-word-badge { font-family: var(--mono); font-size: .55rem; padding: .2em .55em; border-radius: 4px; white-space: nowrap; }
+.rp-badge-green { background: rgba(16,185,129,.12); color: var(--green); border: 1px solid rgba(16,185,129,.2); }
+.rp-badge-dim   { background: rgba(255,255,255,.05); color: var(--text-muted); border: 1px solid rgba(255,255,255,.08); }
+</style>
+
+<script>
+// Stat bar animasyonları
+document.querySelectorAll('.rp-stat').forEach((card, i) => {
+  const fill = card.querySelector('.rp-stat-fill');
+  const pct  = fill.dataset.pct;
+  setTimeout(() => { fill.style.width = pct ? pct + '%' : '65%'; }, 200 + i * 80);
+});
+
+// Stage bar animasyonları
+document.querySelectorAll('.rp-stage-fill').forEach((el, i) => {
+  const w = el.style.width;
+  el.style.width = '0%';
+  setTimeout(() => { el.style.width = w; }, 400 + i * 50);
+});
+</script>
+{% endblock %}

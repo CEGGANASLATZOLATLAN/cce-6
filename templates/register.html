@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+{% block title %}Kayıt Ol{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center mt-4">
+  <div class="col-md-5 col-lg-4">
+    <div class="text-center mb-4">
+      <div class="display-4 mb-2">⚡</div>
+      <h2 class="fw-bold">CCE</h2>
+      <p class="text-muted">Yeni hesap oluştur</p>
+    </div>
+    <div class="card border-0 shadow-sm">
+      <div class="card-body p-4">
+        <h4 class="fw-semibold mb-4">Kayıt Ol</h4>
+        <form method="POST">
+          <div class="mb-3">
+            <label class="form-label fw-medium">Kullanıcı Adı <span class="text-danger">*</span></label>
+            <div class="input-group">
+              <span class="input-group-text bg-light border-end-0"><i class="bi bi-person text-muted"></i></span>
+              <input type="text" name="username" class="form-control border-start-0"
+                     placeholder="Kullanıcı adı seç" required autofocus/>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-medium">E-posta <span class="text-muted small">(isteğe bağlı)</span></label>
+            <div class="input-group">
+              <span class="input-group-text bg-light border-end-0"><i class="bi bi-envelope text-muted"></i></span>
+              <input type="email" name="email" class="form-control border-start-0" placeholder="ornek@email.com"/>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-medium">Şifre <span class="text-danger">*</span></label>
+            <div class="input-group">
+              <span class="input-group-text bg-light border-end-0"><i class="bi bi-lock text-muted"></i></span>
+              <input type="password" name="password" class="form-control border-start-0"
+                     placeholder="En az 4 karakter" required/>
+            </div>
+          </div>
+          <div class="mb-4">
+            <label class="form-label fw-medium">Şifre Tekrar <span class="text-danger">*</span></label>
+            <div class="input-group">
+              <span class="input-group-text bg-light border-end-0"><i class="bi bi-lock-fill text-muted"></i></span>
+              <input type="password" name="confirm_password" class="form-control border-start-0"
+                     placeholder="Şifreyi tekrar gir" required/>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary w-100 fw-semibold py-2">
+            <i class="bi bi-person-plus me-2"></i>Hesap Oluştur
+          </button>
+        </form>
+      </div>
+    </div>
+    <div class="text-center mt-3">
+      <span class="text-muted small">Hesabın var mı?</span>
+      <a href="{{ url_for('login') }}" class="text-primary small ms-2">Giriş Yap</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

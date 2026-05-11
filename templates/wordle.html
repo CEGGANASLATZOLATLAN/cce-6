@@ -1,0 +1,216 @@
+{% extends 'base.html' %}
+{% block title %}Wordle{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-6 col-md-8">
+
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <div>
+        <div class="eyebrow">// mini oyun</div>
+        <h2 class="fw-bold mb-0" style="letter-spacing:-.01em;">
+          <i class="bi bi-grid-3x2-gap me-2" style="color:#39ff14;filter:drop-shadow(0 0 8px rgba(57,255,20,.5));"></i>Wordle
+        </h2>
+      </div>
+      <a href="{{ url_for('wordle') }}" class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-arrow-clockwise me-1"></i>Yeni Kelime
+      </a>
+    </div>
+
+    <!-- Legend -->
+    <div class="d-flex gap-2 mb-4" style="font-family:var(--mono);font-size:.65rem;flex-wrap:wrap;">
+      <span class="wl-legend wl-correct">▪ Doğru yer</span>
+      <span class="wl-legend wl-present">▪ Yanlış yer</span>
+      <span class="wl-legend wl-absent">▪ Yok</span>
+    </div>
+
+    <!-- Grid -->
+    <div id="grid" class="wordle-grid mb-4">
+      {% for row in range(6) %}
+      <div class="wordle-row" id="row-{{ row }}">
+        {% for col in range(word_length) %}
+        <div class="wordle-cell" id="cell-{{ row }}-{{ col }}"></div>
+        {% endfor %}
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- Message -->
+    <div id="message" class="text-center fw-semibold mb-3"
+         style="min-height:28px;font-family:var(--mono);font-size:.9rem;"></div>
+
+    <!-- Keyboard -->
+    <div id="keyboard" class="wordle-keyboard">
+      {% for row in [['Q','W','E','R','T','Y','U','I','O','P'],
+                     ['A','S','D','F','G','H','J','K','L'],
+                     ['ENTER','Z','X','C','V','B','N','M','⌫']] %}
+      <div class="kb-row">
+        {% for key in row %}
+        <button class="kb-key {% if key in ['ENTER','⌫'] %}kb-wide{% endif %}"
+                data-key="{{ key }}" onclick="handleKey('{{ key }}')">{{ key }}</button>
+        {% endfor %}
+      </div>
+      {% endfor %}
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const TARGET     = "{{ target_word }}";
+const TARGET_TUR = "{{ target_tur }}";
+const WORD_LEN   = {{ word_length }};
+
+let currentRow = 0;
+let currentCol = 0;
+let guess      = Array(WORD_LEN).fill('');
+let gameOver   = false;
+let animating  = false;
+const usedKeys = {};
+
+// Hücre boyutunu kelime uzunluğuna göre ayarla
+(function() {
+  const size = WORD_LEN <= 5 ? 58 : WORD_LEN <= 7 ? 48 : 40;
+  const fs   = Math.round(size * 0.47);
+  document.querySelectorAll('.wordle-cell').forEach(c => {
+    c.style.width    = size + 'px';
+    c.style.height   = size + 'px';
+    c.style.fontSize = fs + 'px';
+  });
+})();
+
+function handleKey(key) {
+  if (gameOver || animating) return;
+  if (key === '⌫' || key === 'BACKSPACE') {
+    deleteLetter();
+  } else if (key === 'ENTER') {
+    submitGuess();
+  } else if (/^[A-Z]$/.test(key) && currentCol < WORD_LEN) {
+    addLetter(key);
+  }
+}
+
+function addLetter(letter) {
+  if (currentCol >= WORD_LEN) return;
+  // Yan yana en fazla 3 aynı harf
+  if (currentCol >= 3 &&
+      guess[currentCol - 1] === letter &&
+      guess[currentCol - 2] === letter &&
+      guess[currentCol - 3] === letter) {
+    showMessage('Aynı harfi 3\'ten fazla yan yana yazamazsın!', 'error');
+    shakeRow(currentRow);
+    return;
+  }
+  guess[currentCol] = letter;
+  const cell = document.getElementById(`cell-${currentRow}-${currentCol}`);
+  cell.textContent = letter;
+  cell.classList.add('filled');
+  currentCol++;
+}
+
+function deleteLetter() {
+  if (currentCol <= 0) return;
+  currentCol--;
+  guess[currentCol] = '';
+  const cell = document.getElementById(`cell-${currentRow}-${currentCol}`);
+  cell.textContent = '';
+  cell.classList.remove('filled');
+}
+
+function submitGuess() {
+  if (currentCol < WORD_LEN) {
+    showMessage(`${WORD_LEN} harf girmelisin!`, 'warn');
+    return;
+  }
+
+  const word   = guess.join('');
+  const rowNum = currentRow;
+
+  const result = Array(WORD_LEN).fill('absent');
+  const used   = Array(WORD_LEN).fill(false);
+
+  for (let i = 0; i < WORD_LEN; i++) {
+    if (word[i] === TARGET[i]) { result[i] = 'correct'; used[i] = true; }
+  }
+  for (let i = 0; i < WORD_LEN; i++) {
+    if (result[i] === 'correct') continue;
+    for (let j = 0; j < WORD_LEN; j++) {
+      if (!used[j] && word[i] === TARGET[j]) {
+        result[i] = 'present'; used[j] = true; break;
+      }
+    }
+  }
+
+  animating  = true;
+  currentCol = 0;
+  guess      = Array(WORD_LEN).fill('');
+
+  for (let i = 0; i < WORD_LEN; i++) {
+    const cell   = document.getElementById(`cell-${rowNum}-${i}`);
+    const status = result[i];
+    const letter = word[i];
+    setTimeout(() => {
+      cell.classList.add('flip', status);
+      updateKey(letter, status);
+      if (i === WORD_LEN - 1) {
+        setTimeout(() => {
+          animating = false;
+          if (word === TARGET) {
+            showMessage('🎉 Tebrikler! Doğru buldun!', 'success');
+            gameOver = true;
+          } else {
+            currentRow++;
+            if (currentRow >= 6) {
+              showMessage(`❌ Kelime: ${TARGET} (${TARGET_TUR})`, 'error');
+              gameOver = true;
+            } else {
+              showMessage('', '');
+            }
+          }
+        }, 150);
+      }
+    }, i * 120);
+  }
+}
+
+function updateKey(letter, status) {
+  const priority = { correct: 3, present: 2, absent: 1 };
+  if ((priority[status] || 0) > (priority[usedKeys[letter]] || 0)) {
+    usedKeys[letter] = status;
+    document.querySelectorAll(`.kb-key[data-key="${letter}"]`).forEach(btn => {
+      btn.classList.remove('correct', 'present', 'absent');
+      btn.classList.add(status);
+    });
+  }
+}
+
+function showMessage(msg, type) {
+  const el = document.getElementById('message');
+  const isLight = document.body.classList.contains('light-mode');
+  const colors = {
+    success: isLight ? '#15803d' : '#39ff14',
+    error:   isLight ? '#991b1b' : '#ef4444',
+    warn:    isLight ? '#92400e' : 'var(--yellow)',
+  };
+  const color = colors[type] || (isLight ? '#1e1b3a' : '#e4e4f0');
+  el.style.cssText = `min-height:28px;font-family:var(--mono);font-size:.9rem;text-align:center;color:${color};`;
+  el.textContent = msg;
+}
+
+function shakeRow(row) {
+  const rowEl = document.getElementById(`row-${row}`);
+  rowEl.style.animation = 'shake 0.4s ease';
+  setTimeout(() => rowEl.style.animation = '', 400);
+}
+
+document.addEventListener('keydown', e => {
+  const k = e.key.toUpperCase();
+  if (k === 'BACKSPACE') handleKey('⌫');
+  else if (k === 'ENTER')    handleKey('ENTER');
+  else if (/^[A-Z]$/.test(k)) handleKey(k);
+});
+</script>
+{% endblock %}

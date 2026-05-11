@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% block title %}Giriş Yap{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center mt-4">
+  <div class="col-md-5 col-lg-4">
+
+    <!-- Logo + title -->
+    <div class="text-center mb-4">
+      <div style="font-size:2.8rem;line-height:1;margin-bottom:.5rem;
+                  background:linear-gradient(135deg,#8b5cf6,#22d3ee,#a78bfa);
+                  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+                  filter:drop-shadow(0 0 14px rgba(139,92,246,.5));">⚡</div>
+      <h2 class="fw-bold gradient-text" style="font-size:1.5rem;letter-spacing:.1em;font-family:var(--mono);">CCE</h2>
+      <p class="eyebrow mt-1">// 6 Sefer Kelime Ezberleme Sistemi</p>
+    </div>
+
+    <div class="card bracket-card" style="--card-accent:#8b5cf6;">
+      <span class="corner corner-tl"></span>
+      <span class="corner corner-tr"></span>
+      <span class="corner corner-bl"></span>
+      <span class="corner corner-br"></span>
+      <div class="card-body p-4">
+        <div class="eyebrow mb-3">// kimlik doğrulama</div>
+        <form method="POST">
+          <div class="mb-3">
+            <label class="form-label">Kullanıcı Adı</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="bi bi-person"></i></span>
+              <input type="text" name="username" class="form-control"
+                     placeholder="kullanıcı_adı" required autofocus/>
+            </div>
+          </div>
+          <div class="mb-4">
+            <label class="form-label">Şifre</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="bi bi-lock"></i></span>
+              <input type="password" name="password" class="form-control"
+                     placeholder="••••••••" required/>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary w-100 py-2">
+            <i class="bi bi-box-arrow-in-right me-2"></i>Giriş Yap
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <div class="text-center mt-3 d-flex justify-content-center gap-3" style="font-family:var(--mono);font-size:.72rem;">
+      <a href="{{ url_for('forgot_password') }}" style="color:var(--text-muted);">
+        <i class="bi bi-key me-1"></i>Şifremi Unuttum
+      </a>
+      <span style="color:var(--border-light);">|</span>
+      <a href="{{ url_for('register') }}" style="color:var(--accent-light);">
+        <i class="bi bi-person-plus me-1"></i>Kayıt Ol
+      </a>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

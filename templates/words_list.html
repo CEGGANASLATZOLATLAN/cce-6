@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+{% block title %}Kelime Listesi{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h2 class="fw-bold mb-0"><i class="bi bi-collection me-2 text-primary"></i>Kelimeler</h2>
+  <a href="{{ url_for('word_add') }}" class="btn btn-primary">
+    <i class="bi bi-plus-lg me-1"></i>Yeni Kelime
+  </a>
+</div>
+
+<div class="mb-4 position-relative">
+  <i class="bi bi-search position-absolute" style="left:14px;top:50%;transform:translateY(-50%);color:var(--text-muted);font-size:.9rem;pointer-events:none;"></i>
+  <input type="text" id="wordSearch" placeholder="İngilizce veya Türkçe ara..."
+         class="form-control"
+         style="padding-left:2.4rem;">
+  <span id="searchCount" class="position-absolute" style="right:14px;top:50%;transform:translateY(-50%);font-family:var(--mono);font-size:.7rem;color:var(--text-muted);"></span>
+</div>
+
+{% if words %}
+<div class="card border-0 shadow-sm">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th class="ps-4">#</th>
+            <th>İngilizce</th>
+            <th>Türkçe</th>
+            <th>Resim</th>
+            <th>Örnekler</th>
+            <th>Aşama</th>
+            <th class="pe-4">İşlem</th>
+          </tr>
+        </thead>
+        <tbody id="wordTableBody">
+          {% for word in words %}
+          <tr data-eng="{{ word.eng_word|lower }}" data-tur="{{ word.tur_word|lower }}">
+            <td class="ps-4 text-muted small">{{ word.id }}</td>
+            <td>
+              <span class="fw-semibold text-primary fs-6">{{ word.eng_word }}</span>
+            </td>
+            <td><span class="tur-word">{{ word.tur_word }}</span></td>
+            <td>
+              {% if word.picture %}
+                <img src="{{ url_for('static', filename='uploads/words/' + word.picture) }}"
+                     class="word-thumb" alt="{{ word.eng_word }}"/>
+              {% else %}
+                <span class="text-muted small">—</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if word.samples %}
+                <span class="badge bg-info-subtle text-info">{{ word.samples|length }} örnek</span>
+              {% else %}
+                <span class="text-muted small">—</span>
+              {% endif %}
+            </td>
+            <td>
+              {% set p = progress_map.get(word.id) %}
+              {% if p %}
+                {% if p.is_learned %}
+                  <span class="badge bg-success">✅ Öğrenildi</span>
+                {% else %}
+                  <span class="badge stage-badge-{{ p.stage }}">{{ STAGE_LABELS.get(p.stage, 'Yeni') }}</span>
+                {% endif %}
+              {% else %}
+                <span class="badge bg-secondary">Yeni</span>
+              {% endif %}
+            </td>
+            <td class="pe-4">
+              <a href="{{ url_for('word_edit', word_id=word.id) }}"
+                 class="btn btn-sm btn-outline-primary me-1">
+                <i class="bi bi-pencil"></i>
+              </a>
+              <form method="POST" action="{{ url_for('word_delete', word_id=word.id) }}"
+                    class="d-inline"
+                    onsubmit="return confirm('{{ word.eng_word }} silinsin mi?')">
+                <button type="submit" class="btn btn-sm btn-outline-danger">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<p class="text-muted small mt-2 ps-1">Toplam {{ words|length }} kelime</p>
+{% else %}
+<div class="text-center py-5">
+  <div class="display-1 mb-3">📚</div>
+  <h4 class="text-muted">Henüz kelime eklenmedi</h4>
+  <p class="text-muted">İlk kelimeni ekle ve öğrenmeye başla!</p>
+  <a href="{{ url_for('word_add') }}" class="btn btn-primary mt-2">
+    <i class="bi bi-plus-lg me-2"></i>İlk Kelimeyi Ekle
+  </a>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+const searchInput = document.getElementById('wordSearch');
+const countEl     = document.getElementById('searchCount');
+if (searchInput) {
+  searchInput.addEventListener('input', function () {
+    const q    = this.value.trim().toLowerCase();
+    const rows = document.querySelectorAll('#wordTableBody tr');
+    let visible = 0;
+    rows.forEach(row => {
+      const eng = row.dataset.eng || '';
+      const tur = row.dataset.tur || '';
+      const show = !q || eng.includes(q) || tur.includes(q);
+      row.style.display = show ? '' : 'none';
+      if (show) visible++;
+    });
+    countEl.textContent = q ? `${visible} sonuç` : '';
+  });
+}
+</script>
+{% endblock %}

@@ -1,0 +1,237 @@
+{% extends 'base.html' %}
+{% block title %}Sınav - Soru {{ question_num }}{% endblock %}
+
+{% block content %}
+<!-- Progress Bar -->
+<div class="mb-3">
+  <div class="d-flex justify-content-between small text-muted mb-1">
+    <span>Soru {{ question_num }} / {{ total }}</span>
+    <span class="badge stage-badge-{{ stage }}">{{ stage_label }}</span>
+  </div>
+  <div class="progress" style="height:8px;">
+    <div class="progress-bar bg-primary" style="width:{{ progress_pct }}%"></div>
+  </div>
+</div>
+
+<div class="row justify-content-center">
+  <div class="col-lg-7">
+    <div class="card border-0 shadow quiz-card mb-3">
+      <div class="card-body p-4 text-center">
+
+        {% if word.picture %}
+        <img src="{{ url_for('static', filename='uploads/words/' + word.picture) }}"
+             class="quiz-word-img mb-3" alt="{{ word.eng_word }}"/>
+        {% endif %}
+
+        {% set neon_colors = [
+          ('#a78bfa','139,92,246'),
+          ('#00f0ff','0,240,255'),
+          ('#ff00e5','255,0,229'),
+          ('#39ff14','57,255,20'),
+          ('#ffd700','255,215,0'),
+          ('#f97316','249,115,22'),
+          ('#67e8f9','103,232,249'),
+          ('#f472b6','244,114,182'),
+        ] %}
+        {% set nc = neon_colors[word.id % neon_colors|length] %}
+        <div class="quiz-word-en"
+             style="background:linear-gradient(135deg,{{ nc[0] }},#fff);
+                    -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+                    background-clip:text;
+                    filter:drop-shadow(0 0 24px rgba({{ nc[1] }},.5));">
+          {{ word.eng_word | upper }}
+        </div>
+        <div class="text-muted small mt-1 mb-3">Bu kelimenin Türkçesi nedir?</div>
+
+        {% if word.samples %}
+        <div class="sample-box">
+          {% for s in word.samples[:1] %}
+          <p class="mb-0 text-muted fst-italic small">
+            "{{ s.sample | replace(word.eng_word, '<strong>' + word.eng_word + '</strong>') | safe }}"
+          </p>
+          {% endfor %}
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Feedback banner (başta gizli) -->
+    <div id="feedbackBanner" class="quiz-feedback-banner mb-3" style="display:none;"></div>
+
+    <!-- Seçenekler -->
+    <div class="row g-2" id="optionsGrid">
+      {% for opt in options %}
+      <div class="col-6">
+        <button class="btn btn-outline-primary w-100 py-3 quiz-option fw-medium"
+                data-opt="{{ opt }}"
+                onclick="handleAnswer(this)">
+          {{ opt }}
+        </button>
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- Boş Bırak -->
+    <div class="mt-2">
+      <button id="skipBtn" class="btn w-100 py-2 quiz-skip" onclick="handleSkip()">
+        <i class="bi bi-skip-forward me-1"></i>Boş Bırak
+      </button>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<style>
+.quiz-feedback-banner {
+  font-family: var(--mono);
+  font-size: .92rem;
+  font-weight: 700;
+  padding: .85rem 1.1rem;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  flex-wrap: wrap;
+  animation: fbSlide .2s ease;
+}
+@keyframes fbSlide {
+  from { opacity:0; transform:translateY(-6px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+.quiz-fb-correct { background:rgba(16,185,129,.12); border:1px solid rgba(16,185,129,.35); color:var(--green); }
+.quiz-fb-wrong   { background:rgba(239,68,68,.1);   border:1px solid rgba(239,68,68,.35);   color:var(--red); }
+.quiz-fb-hint    { font-weight:400; opacity:.85; margin-left:.3rem; }
+.quiz-fb-hint strong { font-weight:800; }
+
+.quiz-opt-correct {
+  background: rgba(16,185,129,.15) !important;
+  border: 2px solid var(--green) !important;
+  color: var(--green) !important;
+  box-shadow: 0 0 16px rgba(16,185,129,.3) !important;
+  pointer-events: none;
+}
+.quiz-opt-wrong {
+  background: rgba(239,68,68,.12) !important;
+  border: 2px solid var(--red) !important;
+  color: var(--red) !important;
+  box-shadow: 0 0 16px rgba(239,68,68,.25) !important;
+  pointer-events: none;
+}
+.quiz-opt-dim {
+  background: transparent !important;
+  border: 1px solid rgba(255,255,255,.07) !important;
+  color: var(--text-muted) !important;
+  opacity: .4 !important;
+  pointer-events: none;
+}
+
+body.light-mode .quiz-fb-correct { background:rgba(22,163,74,.08); border-color:rgba(22,163,74,.3); color:#15803d; }
+body.light-mode .quiz-fb-wrong   { background:rgba(220,38,38,.08); border-color:rgba(220,38,38,.3); color:#b91c1c; }
+body.light-mode .quiz-opt-correct { color:#14532d !important; border-color:#16a34a !important; box-shadow:none !important; }
+body.light-mode .quiz-opt-wrong   { color:#7f1d1d !important; border-color:#dc2626 !important; box-shadow:none !important; }
+body.light-mode .quiz-opt-dim     { border-color:var(--border) !important; color:var(--text-muted) !important; }
+
+.quiz-skip {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,.08);
+  color: var(--text-muted);
+  font-family: var(--mono);
+  font-size: .72rem;
+  letter-spacing: .05em;
+  transition: border-color .15s, color .15s;
+}
+.quiz-skip:hover { border-color: rgba(239,68,68,.35); color: var(--red); }
+body.light-mode .quiz-skip { border-color: var(--border); color: var(--text-muted); }
+body.light-mode .quiz-skip:hover { border-color: rgba(220,38,38,.3); color: #b91c1c; }
+</style>
+
+<script>
+const CORRECT = "{{ word.tur_word | lower }}";
+const NEXT_URL = "{{ url_for('quiz_question') }}";
+const ANSWER_URL = "{{ url_for('quiz_answer') }}";
+let answered = false;
+
+function handleAnswer(btn) {
+  if (answered) return;
+  answered = true;
+
+  const chosen = btn.dataset.opt;
+  const isCorrect = chosen.trim().toLowerCase() === CORRECT.trim();
+
+  // Tüm butonları kilitle ve renklendir
+  document.querySelectorAll('.quiz-option').forEach(b => {
+    const bVal = b.dataset.opt.trim().toLowerCase();
+    b.classList.remove('btn-outline-primary');
+    if (bVal === CORRECT.trim()) {
+      b.classList.add('quiz-opt-correct');
+      b.innerHTML = '<i class="bi bi-check-lg me-1"></i>' + b.dataset.opt;
+    } else if (!isCorrect && b === btn) {
+      b.classList.add('quiz-opt-wrong');
+      b.innerHTML = '<i class="bi bi-x-lg me-1"></i>' + b.dataset.opt;
+    } else {
+      b.classList.add('quiz-opt-dim');
+    }
+  });
+
+  // Banner göster
+  const banner = document.getElementById('feedbackBanner');
+  if (isCorrect) {
+    banner.className = 'quiz-feedback-banner quiz-fb-correct mb-3';
+    banner.innerHTML = '<i class="bi bi-check-circle-fill"></i> Doğru!';
+  } else {
+    banner.className = 'quiz-feedback-banner quiz-fb-wrong mb-3';
+    banner.innerHTML = '<i class="bi bi-x-circle-fill"></i> Yanlış! <span class="quiz-fb-hint">Doğru cevap: <strong>' + btn.closest('.row').querySelector('.quiz-opt-correct').dataset.opt + '</strong></span>';
+  }
+  banner.style.display = 'flex';
+
+  // Cevabı arka planda kaydet
+  fetch(ANSWER_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: 'answer=' + encodeURIComponent(chosen)
+  });
+
+  // Boş bırak butonunu gizle
+  document.getElementById('skipBtn').style.display = 'none';
+
+  // 1.6 saniye sonra sonraki soruya geç
+  setTimeout(() => { window.location.href = NEXT_URL; }, 1600);
+}
+
+function handleSkip() {
+  if (answered) return;
+  answered = true;
+
+  // Doğru cevabı yeşil, diğerlerini soluk göster
+  document.querySelectorAll('.quiz-option').forEach(b => {
+    b.classList.remove('btn-outline-primary');
+    if (b.dataset.opt.trim().toLowerCase() === CORRECT.trim()) {
+      b.classList.add('quiz-opt-correct');
+      b.innerHTML = '<i class="bi bi-check-lg me-1"></i>' + b.dataset.opt;
+    } else {
+      b.classList.add('quiz-opt-dim');
+    }
+  });
+
+  // Boş bırak butonunu gizle
+  document.getElementById('skipBtn').style.display = 'none';
+
+  // Banner
+  const banner = document.getElementById('feedbackBanner');
+  banner.className = 'quiz-feedback-banner quiz-fb-wrong mb-3';
+  banner.innerHTML = '<i class="bi bi-dash-circle-fill"></i> Boş bırakıldı <span class="quiz-fb-hint">Doğru cevap: <strong>' + document.querySelector('.quiz-opt-correct').dataset.opt + '</strong></span>';
+  banner.style.display = 'flex';
+
+  // Yanlış olarak kaydet
+  fetch(ANSWER_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: 'answer=' + encodeURIComponent('__skip__')
+  });
+
+  setTimeout(() => { window.location.href = NEXT_URL; }, 1600);
+}
+</script>
+{% endblock %}

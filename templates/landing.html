@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CCE — 6 Sefer Kelime Ezberleme</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet"/>
+  <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet"/>
+
+  <style>
+    /* Landing-specific overrides */
+    .container > * { animation: none; }   /* disable global fadeInUp on sections */
+
+    /* ── Fixed top nav ── */
+    .land-nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      padding: .7rem 0;
+      background: rgba(6,6,12,.82);
+      backdrop-filter: blur(20px) saturate(1.4);
+      border-bottom: 1px solid var(--border);
+    }
+    .land-nav::after {
+      content: '';
+      position: absolute; bottom: 0; left: 0; right: 0; height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(139,92,246,.5), rgba(0,240,255,.4), transparent);
+    }
+    .land-logo {
+      font-family: var(--mono);
+      font-weight: 800; font-size: 1rem;
+      letter-spacing: .2em; text-transform: uppercase;
+      background: linear-gradient(135deg, #a78bfa, #22d3ee);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text; text-decoration: none;
+    }
+    .land-logo em {
+      font-style: normal; margin-right: .35rem;
+      background: linear-gradient(135deg, #8b5cf6, #22d3ee);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+      filter: drop-shadow(0 0 8px rgba(139,92,246,.5));
+    }
+
+    /* ── Hero ── */
+    .hero {
+      min-height: 100vh;
+      display: flex; align-items: center;
+      padding-top: 80px;
+      position: relative; overflow: hidden;
+    }
+    /* Extra glow behind hero text */
+    .hero::before {
+      content: '';
+      position: absolute; top: 20%; left: 50%; transform: translateX(-50%);
+      width: 600px; height: 400px;
+      background: radial-gradient(ellipse, rgba(139,92,246,.12), transparent 70%);
+      pointer-events: none;
+      animation: hero-glow 8s ease-in-out infinite alternate;
+    }
+    @keyframes hero-glow {
+      from { transform: translateX(-50%) scale(.9); opacity: .8; }
+      to   { transform: translateX(-50%) scale(1.1); opacity: 1; }
+    }
+
+    .hero-eyebrow {
+      font-family: var(--mono);
+      font-size: .62rem; font-weight: 700;
+      letter-spacing: .35em; text-transform: uppercase;
+      color: rgba(139,92,246,.6);
+      margin-bottom: 1.2rem;
+    }
+    .hero-title {
+      font-size: clamp(2.4rem, 6vw, 4.2rem);
+      font-weight: 900; line-height: 1.08;
+      letter-spacing: -.03em;
+      color: var(--text-primary);
+      margin-bottom: 1.4rem;
+    }
+    .hero-title .hl {
+      background: linear-gradient(135deg, #00f0ff 0%, #a78bfa 50%, #ff00e5 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+      filter: drop-shadow(0 0 20px rgba(139,92,246,.4));
+    }
+    .hero-desc {
+      font-size: 1rem; line-height: 1.7;
+      color: var(--text-secondary); max-width: 520px;
+      margin-bottom: 2rem;
+    }
+    .hero-ctas { display: flex; gap: 1rem; flex-wrap: wrap; }
+
+    /* Badge strip */
+    .hero-badges {
+      display: flex; gap: .6rem; flex-wrap: wrap;
+      margin-top: 3rem;
+    }
+    .hero-badge {
+      font-family: var(--mono); font-size: .58rem; font-weight: 700;
+      letter-spacing: .12em; text-transform: uppercase;
+      padding: .3em .8em;
+      border-radius: 2px;
+      border: 1px solid;
+    }
+
+    /* ── Stat bar ── */
+    .stat-bar {
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      position: relative; overflow: hidden;
+    }
+    .stat-bar::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, #00f0ff, #8b5cf6, #ff00e5, #ffd700);
+    }
+    .stat-bar-item {
+      padding: 1.8rem 1rem; text-align: center;
+      border-right: 1px solid var(--border);
+    }
+    .stat-bar-item:last-child { border-right: none; }
+    .stat-bar-num {
+      font-family: var(--mono); font-size: 2rem; font-weight: 900;
+      line-height: 1;
+    }
+    .stat-bar-lbl {
+      font-family: var(--mono); font-size: .6rem; font-weight: 700;
+      letter-spacing: .2em; text-transform: uppercase;
+      color: var(--text-muted); margin-top: .3rem;
+    }
+
+    /* ── Features ── */
+    .features { padding: 6rem 0; }
+    .features-header { text-align: center; margin-bottom: 3.5rem; }
+    .features-header h2 {
+      font-size: clamp(1.6rem, 3.5vw, 2.4rem);
+      font-weight: 900; letter-spacing: -.02em;
+    }
+
+    .feat-card {
+      border-radius: 3px !important;
+      border: 1px solid rgba(255,255,255,.06) !important;
+      background: linear-gradient(135deg, rgba(8,8,24,.88), rgba(12,12,30,.72)) !important;
+      backdrop-filter: blur(14px);
+      transition: transform .25s, border-color .25s, box-shadow .25s;
+      height: 100%;
+      position: relative; overflow: hidden;
+    }
+    .feat-card::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 1px;
+      background: linear-gradient(90deg, transparent, var(--fc-accent, var(--accent)), transparent);
+      opacity: .5;
+    }
+    .feat-card:hover {
+      transform: translateY(-6px);
+      border-color: color-mix(in srgb, var(--fc-accent, var(--accent)) 35%, transparent) !important;
+      box-shadow: 0 0 24px color-mix(in srgb, var(--fc-accent, var(--accent)) 18%, transparent) !important;
+    }
+    .feat-icon {
+      width: 48px; height: 48px;
+      border-radius: 3px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem; margin-bottom: 1rem;
+      border: 1px solid rgba(255,255,255,.07);
+    }
+    .feat-num {
+      font-family: var(--mono); font-size: .6rem; font-weight: 800;
+      letter-spacing: .3em; text-transform: uppercase;
+      color: var(--fc-accent, var(--accent)); margin-bottom: .5rem;
+    }
+    .feat-title {
+      font-size: 1rem; font-weight: 800;
+      color: var(--text-primary); margin-bottom: .5rem;
+      letter-spacing: -.01em;
+    }
+    .feat-desc {
+      font-size: .82rem; line-height: 1.65;
+      color: var(--text-secondary);
+    }
+
+    /* ── Stage timeline ── */
+    .stages { padding: 5rem 0; }
+    .stage-timeline {
+      display: flex; gap: 0; position: relative;
+    }
+    .stage-timeline::before {
+      content: '';
+      position: absolute; top: 28px; left: 10%; right: 10%; height: 1px;
+      background: linear-gradient(90deg, transparent, var(--accent), var(--cyan), transparent);
+      opacity: .3;
+    }
+    .stage-item {
+      flex: 1; text-align: center; padding: 0 .5rem;
+      position: relative;
+    }
+    .stage-dot {
+      width: 56px; height: 56px;
+      border-radius: 3px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem;
+      border: 1px solid;
+      margin: 0 auto 1rem;
+      transition: transform .2s, box-shadow .2s;
+      cursor: default;
+    }
+    .stage-item:hover .stage-dot {
+      transform: translateY(-4px);
+    }
+    .stage-lbl {
+      font-family: var(--mono); font-size: .6rem; font-weight: 700;
+      letter-spacing: .12em; text-transform: uppercase;
+      margin-bottom: .2rem;
+    }
+    .stage-sub {
+      font-family: var(--mono); font-size: .55rem;
+      color: var(--text-muted);
+    }
+
+    /* ── CTA section ── */
+    .cta-section {
+      padding: 6rem 0; text-align: center;
+      position: relative; overflow: hidden;
+    }
+    .cta-section::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse 70% 60% at 50% 50%, rgba(139,92,246,.1), transparent);
+      pointer-events: none;
+    }
+    .cta-section h2 {
+      font-size: clamp(1.8rem, 4vw, 3rem);
+      font-weight: 900; letter-spacing: -.03em; margin-bottom: 1rem;
+    }
+    .cta-section p {
+      font-size: .95rem; color: var(--text-secondary); max-width: 460px; margin: 0 auto 2rem;
+    }
+
+    /* ── Footer ── */
+    .land-footer {
+      border-top: 1px solid var(--border);
+      padding: 1.5rem 0;
+      text-align: center;
+      font-family: var(--mono); font-size: .65rem;
+      color: var(--text-muted);
+      letter-spacing: .1em;
+    }
+
+    /* Entrance animations */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .anim-1 { animation: fadeUp .55s ease both; }
+    .anim-2 { animation: fadeUp .55s .1s ease both; }
+    .anim-3 { animation: fadeUp .55s .2s ease both; }
+    .anim-4 { animation: fadeUp .55s .3s ease both; }
+    .anim-5 { animation: fadeUp .55s .4s ease both; }
+  </style>
+</head>
+<body>
+
+<!-- ── Top Nav ── -->
+<nav class="land-nav">
+  <div class="container d-flex justify-content-between align-items-center">
+    <a href="/" class="land-logo"><em>⚡</em>CCE</a>
+    <div class="d-flex gap-2">
+      <a href="{{ url_for('login') }}" class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-box-arrow-in-right me-1"></i>Giriş Yap
+      </a>
+      <a href="{{ url_for('register') }}" class="btn btn-primary btn-sm">
+        <i class="bi bi-person-plus me-1"></i>Kayıt Ol
+      </a>
+    </div>
+  </div>
+</nav>
+
+<!-- ── Hero ── -->
+<section class="hero">
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-lg-7">
+        <div class="hero-eyebrow anim-1">// spaced repetition sistemi v1.0</div>
+        <h1 class="hero-title anim-2">
+          Kelimeleri<br/>
+          <span class="hl">6 Kez Tekrarla,</span><br/>
+          Kalıcı Öğren.
+        </h1>
+        <p class="hero-desc anim-3">
+          Bilimsel aralıklı tekrar yöntemiyle İngilizce kelimeleri hafızana işle.
+          Her kelimeyi 1 gün, 1 hafta, 1 ay, 3 ay, 6 ay ve 1 yılda doğru cevapla —
+          artık unutmazsın.
+        </p>
+        <div class="hero-ctas anim-4">
+          <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg">
+            <i class="bi bi-play-fill me-2"></i>Ücretsiz Başla
+          </a>
+          <a href="{{ url_for('login') }}" class="btn btn-outline-secondary btn-lg">
+            <i class="bi bi-box-arrow-in-right me-2"></i>Giriş Yap
+          </a>
+        </div>
+        <div class="hero-badges anim-5">
+          <span class="hero-badge" style="color:#00f0ff;border-color:rgba(0,240,255,.3);background:rgba(0,240,255,.06);">Spaced Repetition</span>
+          <span class="hero-badge" style="color:#a78bfa;border-color:rgba(139,92,246,.3);background:rgba(139,92,246,.06);">Wordle Oyunu</span>
+          <span class="hero-badge" style="color:#39ff14;border-color:rgba(57,255,20,.3);background:rgba(57,255,20,.06);">Word Chain</span>
+          <span class="hero-badge" style="color:#ffd700;border-color:rgba(255,215,0,.3);background:rgba(255,215,0,.06);">Analiz Raporu</span>
+        </div>
+      </div>
+
+      <!-- Hero right: floating card -->
+      <div class="col-lg-5 d-none d-lg-block">
+        <div style="padding: 1.5rem; position: relative;">
+          <!-- Glow orb -->
+          <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+                      width:280px;height:280px;border-radius:50%;
+                      background:radial-gradient(circle, rgba(139,92,246,.2), transparent 70%);
+                      pointer-events:none;"></div>
+
+          <!-- Mock quiz card -->
+          <div style="background:linear-gradient(135deg,rgba(8,8,24,.95),rgba(14,14,34,.9));
+                      border:1px solid rgba(139,92,246,.3);border-radius:3px;
+                      box-shadow:0 0 40px rgba(139,92,246,.25);
+                      padding:2rem;position:relative;animation:float 6s ease-in-out infinite;">
+            <div style="font-family:var(--mono);font-size:.6rem;letter-spacing:.25em;
+                        text-transform:uppercase;color:rgba(139,92,246,.5);margin-bottom:1rem;">
+              // soru 3 / 10
+            </div>
+            <div style="font-family:var(--mono);font-size:2.8rem;font-weight:900;
+                        letter-spacing:6px;text-align:center;margin-bottom:1.5rem;
+                        background:linear-gradient(135deg,#a78bfa,#22d3ee);
+                        -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+                        filter:drop-shadow(0 0 20px rgba(139,92,246,.4));">
+              BRAVE
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem;">
+              <div style="background:rgba(139,92,246,.08);border:1px solid rgba(139,92,246,.2);
+                          border-radius:3px;padding:.75rem;font-family:var(--mono);
+                          font-size:.75rem;font-weight:700;color:var(--text-secondary);
+                          text-transform:uppercase;cursor:default;">CESUR</div>
+              <div style="background:rgba(57,255,20,.08);border:1px solid rgba(57,255,20,.35);
+                          border-radius:3px;padding:.75rem;font-family:var(--mono);
+                          font-size:.75rem;font-weight:700;color:#39ff14;
+                          text-transform:uppercase;cursor:default;
+                          box-shadow:0 0 12px rgba(57,255,20,.2);">✓ CESUR</div>
+              <div style="background:rgba(139,92,246,.08);border:1px solid rgba(139,92,246,.2);
+                          border-radius:3px;padding:.75rem;font-family:var(--mono);
+                          font-size:.75rem;font-weight:700;color:var(--text-secondary);
+                          text-transform:uppercase;cursor:default;">KÖTÜ</div>
+              <div style="background:rgba(139,92,246,.08);border:1px solid rgba(139,92,246,.2);
+                          border-radius:3px;padding:.75rem;font-family:var(--mono);
+                          font-size:.75rem;font-weight:700;color:var(--text-secondary);
+                          text-transform:uppercase;cursor:default;">HIZLI</div>
+            </div>
+            <!-- Stage indicator -->
+            <div style="display:flex;gap:4px;margin-top:1.2rem;">
+              {% for i in range(6) %}
+              <div style="flex:1;height:3px;border-radius:2px;
+                          background:{% if i < 2 %}var(--accent){% else %}rgba(255,255,255,.08){% endif %};
+                          {% if i < 2 %}box-shadow:0 0 6px var(--accent-glow);{% endif %}">
+              </div>
+              {% endfor %}
+            </div>
+            <div style="font-family:var(--mono);font-size:.58rem;color:var(--text-muted);
+                        text-align:center;margin-top:.4rem;letter-spacing:.15em;">
+              AŞAMA 2 / 6
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Stat Bar ── -->
+<div class="stat-bar">
+  <div class="container">
+    <div class="row g-0">
+      <div class="col-6 col-md-3 stat-bar-item">
+        <div class="stat-bar-num" style="color:#a78bfa;">6</div>
+        <div class="stat-bar-lbl">Tekrar Aşaması</div>
+      </div>
+      <div class="col-6 col-md-3 stat-bar-item">
+        <div class="stat-bar-num" style="color:#00f0ff;">365</div>
+        <div class="stat-bar-lbl">Gün Kapsam</div>
+      </div>
+      <div class="col-6 col-md-3 stat-bar-item">
+        <div class="stat-bar-num" style="color:#39ff14;">%90+</div>
+        <div class="stat-bar-lbl">Kalıcılık Oranı</div>
+      </div>
+      <div class="col-6 col-md-3 stat-bar-item">
+        <div class="stat-bar-num" style="color:#ffd700;">4</div>
+        <div class="stat-bar-lbl">Öğrenme Modu</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Features ── -->
+<section class="features">
+  <div class="container">
+    <div class="features-header">
+      <div class="eyebrow mb-2">// özellikler</div>
+      <h2>Neden <span class="gradient-text">CCE?</span></h2>
+      <p style="color:var(--text-secondary);font-size:.9rem;max-width:480px;margin:.8rem auto 0;">
+        Dört farklı modla kelimeleri hem öğren hem eğlen.
+      </p>
+    </div>
+    <div class="row g-3">
+
+      <div class="col-md-6 col-lg-3">
+        <div class="feat-card p-4" style="--fc-accent:#8b5cf6;">
+          <div class="feat-icon" style="background:rgba(139,92,246,.1);border-color:rgba(139,92,246,.2);">
+            <i class="bi bi-pencil-square" style="color:#a78bfa;"></i>
+          </div>
+          <div class="feat-num">// 01</div>
+          <div class="feat-title">6 Sefer Sınav</div>
+          <div class="feat-desc">Her kelime 6 farklı zaman aralığında tekrar seni karşılar. Yanlış cevaplarsan sıfırdan başlarsın.</div>
+        </div>
+      </div>
+
+      <div class="col-md-6 col-lg-3">
+        <div class="feat-card p-4" style="--fc-accent:#00f0ff;">
+          <div class="feat-icon" style="background:rgba(0,240,255,.08);border-color:rgba(0,240,255,.15);">
+            <i class="bi bi-grid-3x2-gap" style="color:#00f0ff;"></i>
+          </div>
+          <div class="feat-num">// 02</div>
+          <div class="feat-title">Wordle Oyunu</div>
+          <div class="feat-desc">Kendi kelime listenle Wordle oyna. Her oyun sana sürpriz bir kelime getirir.</div>
+        </div>
+      </div>
+
+      <div class="col-md-6 col-lg-3">
+        <div class="feat-card p-4" style="--fc-accent:#39ff14;">
+          <div class="feat-icon" style="background:rgba(57,255,20,.06);border-color:rgba(57,255,20,.15);">
+            <i class="bi bi-link-45deg" style="color:#39ff14;"></i>
+          </div>
+          <div class="feat-num">// 03</div>
+          <div class="feat-title">Word Chain</div>
+          <div class="feat-desc">Seçtiğin kelimeleri içeren Türkçe hikayeler oluştur. Kelimeler bağlam içinde daha kalıcı öğrenilir.</div>
+        </div>
+      </div>
+
+      <div class="col-md-6 col-lg-3">
+        <div class="feat-card p-4" style="--fc-accent:#ffd700;">
+          <div class="feat-icon" style="background:rgba(255,215,0,.07);border-color:rgba(255,215,0,.15);">
+            <i class="bi bi-bar-chart-fill" style="color:#ffd700;"></i>
+          </div>
+          <div class="feat-num">// 04</div>
+          <div class="feat-title">Analiz Raporu</div>
+          <div class="feat-desc">Hangi kelimeleri öğrendin, hangilerinde takıldın? Detaylı raporu yazdırarak hocana göster.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ── Stage Timeline ── -->
+<section class="stages" style="background:rgba(255,255,255,.015);border-top:1px solid var(--border);border-bottom:1px solid var(--border);">
+  <div class="container">
+    <div class="text-center mb-4">
+      <div class="eyebrow mb-2">// algoritma</div>
+      <h2 style="font-size:clamp(1.4rem,3vw,2rem);font-weight:900;letter-spacing:-.02em;">
+        Spaced Repetition <span class="gradient-text">6 Aşama</span>
+      </h2>
+    </div>
+    <div class="stage-timeline">
+      {% set stages = [
+        ('⭐','Yeni','Başlangıç','#94a3b8'),
+        ('🔥','1 Gün','Stage 1','#a78bfa'),
+        ('💫','1 Hafta','Stage 2','#67e8f9'),
+        ('⚡','1 Ay','Stage 3','#fde68a'),
+        ('🌙','3 Ay','Stage 4','#fdba74'),
+        ('🌟','6 Ay','Stage 5','#d8b4fe'),
+        ('🚀','1 Yıl','Stage 6','#818cf8'),
+        ('✅','Öğrenildi','Tamamlandı','#6ee7b7')
+      ] %}
+      {% for emoji, lbl, sub, color in stages %}
+      <div class="stage-item">
+        <div class="stage-dot"
+             style="background:color-mix(in srgb,{{ color }} 10%,transparent);
+                    border-color:color-mix(in srgb,{{ color }} 35%,transparent);
+                    box-shadow:0 0 10px color-mix(in srgb,{{ color }} 20%,transparent);">
+          {{ emoji }}
+        </div>
+        <div class="stage-lbl" style="color:{{ color }};">{{ lbl }}</div>
+        <div class="stage-sub">{{ sub }}</div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- ── CTA Section ── -->
+<section class="cta-section">
+  <div class="container position-relative">
+    <div class="eyebrow mb-3">// hemen başla</div>
+    <h2>
+      Kelime Ezberini <span class="gradient-text">Bir Üst Seviyeye</span> Taşı
+    </h2>
+    <p>
+      Ücretsiz hesap oluştur, kelimelerini ekle ve bugün öğrenmeye başla.
+    </p>
+    <div class="d-flex justify-content-center gap-3 flex-wrap">
+      <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg">
+        <i class="bi bi-play-fill me-2"></i>Ücretsiz Başla
+      </a>
+      <a href="{{ url_for('login') }}" class="btn btn-outline-secondary btn-lg">
+        <i class="bi bi-box-arrow-in-right me-2"></i>Giriş Yap
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ── Footer ── -->
+<footer class="land-footer">
+  <div class="container">
+    <span style="color:rgba(139,92,246,.4);">⚡ CCE</span>
+    &nbsp;·&nbsp;
+    6 Sefer Kelime Ezberleme Sistemi
+    &nbsp;·&nbsp;
+    <span style="color:rgba(34,211,238,.3);">Built with Flask + Spaced Repetition</span>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+// Ripple on buttons
+document.addEventListener('click', function(e) {
+  const btn = e.target.closest('.btn');
+  if (!btn) return;
+  const r = document.createElement('span');
+  r.className = 'ripple';
+  const rect = btn.getBoundingClientRect();
+  const size = Math.max(rect.width, rect.height);
+  r.style.cssText = `width:${size}px;height:${size}px;left:${e.clientX-rect.left-size/2}px;top:${e.clientY-rect.top-size/2}px;`;
+  btn.appendChild(r);
+  r.addEventListener('animationend', () => r.remove());
+});
+
+// Scroll-reveal for feature cards
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach((entry, i) => {
+    if (entry.isIntersecting) {
+      entry.target.style.animation = `fadeUp .5s ${i * 0.08}s ease both`;
+      observer.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.1 });
+
+document.querySelectorAll('.feat-card, .stage-item').forEach(el => {
+  el.style.opacity = '0';
+  observer.observe(el);
+});
+</script>
+</body>
+</html>

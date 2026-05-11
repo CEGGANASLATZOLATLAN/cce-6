@@ -1,0 +1,198 @@
+{% extends 'base.html' %}
+{% block title %}Word Chain{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col-lg-5 mb-4">
+    <h2 class="fw-bold mb-1"><i class="bi bi-link-45deg me-2 text-primary"></i>Word Chain</h2>
+    <p class="text-muted small mb-4">Kelimelerden bir hikaye oluştur ve ezberle!</p>
+
+    <div class="card border-0 shadow-sm">
+      <div class="card-body p-4">
+        <form method="POST" id="chain-form">
+          <div class="mb-3">
+            <label class="form-label fw-medium">
+              Kelime Seç <span class="text-muted small">(en az 3, en fazla 8)</span>
+            </label>
+            <div class="word-select-grid">
+              {% for word in all_words %}
+              <div class="word-check-item" style="padding-left:.6rem;">
+                <input class="form-check-input" type="checkbox"
+                       name="word_ids" value="{{ word.id }}"
+                       id="w{{ word.id }}"
+                       {% if word in selected_words %}checked{% endif %}
+                       onchange="checkLimit()"/>
+                <label class="form-check-label" for="w{{ word.id }}">
+                  <span class="fw-medium">{{ word.eng_word }}</span>
+                  <span class="text-muted small ms-1">{{ word.tur_word }}</span>
+                </label>
+              </div>
+              {% endfor %}
+            </div>
+            <div id="sel-count" class="small text-muted mt-2">0 kelime seçildi</div>
+          </div>
+
+          <button type="submit" class="btn btn-primary w-100 fw-semibold">
+            <i class="bi bi-magic me-2"></i>Hikaye Oluştur
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-7">
+    {% if story %}
+    <div class="card border-0 shadow story-card">
+      <div class="card-header bg-primary text-white border-0 py-3">
+        <h5 class="mb-0 fw-semibold">
+          <i class="bi bi-book me-2"></i>Oluşturulan Hikaye
+          {% if story.ai %}
+          <span class="badge bg-warning text-dark ms-2 small">AI ile oluşturuldu ✨</span>
+          {% endif %}
+        </h5>
+      </div>
+      <div class="card-body p-4">
+        <div class="story-text fs-6 lh-lg mb-4">
+          {% set text = story.text %}
+          {% for word in story.words %}
+            {% set text = text | replace(word.upper(), '<span class="story-word">' + word.upper() + '</span>') %}
+          {% endfor %}
+          {{ text | safe }}
+        </div>
+
+        <hr/>
+
+        <h6 class="fw-semibold mb-3">Kelime Sözlüğü</h6>
+        <div class="row g-2">
+          {% for word in selected_words %}
+          <div class="col-6 col-md-4">
+            <div class="word-badge-card">
+              <span class="fw-bold text-primary">{{ word.eng_word | upper }}</span>
+              <span class="text-muted mx-1">→</span>
+              <span>{{ word.tur_word }}</span>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+
+        <div class="mt-4 d-flex gap-2 flex-wrap">
+          <button onclick="window.print()" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-printer me-1"></i>Yazdır
+          </button>
+          <button onclick="copyStory()" class="btn btn-outline-primary btn-sm">
+            <i class="bi bi-clipboard me-1"></i>Kopyala
+          </button>
+          <button onclick="generateImage()" class="btn btn-outline-warning btn-sm" id="imgBtn">
+            <i class="bi bi-magic me-1"></i>Görsel Oluştur
+          </button>
+        </div>
+
+        <!-- AI Görsel Alanı -->
+        <div id="imgArea" class="mt-4" style="display:none;">
+          <div id="imgLoading" class="text-center py-4" style="display:none;">
+            <div class="spinner-border spinner-border-sm text-warning me-2"></div>
+            <span style="font-family:var(--mono);font-size:.75rem;color:var(--text-muted);">Görsel oluşturuluyor...</span>
+          </div>
+          <img id="storyImg" src="" alt="AI Görseli"
+               style="width:100%;border-radius:10px;display:none;border:1px solid var(--border);"
+               onload="imgLoaded()" onerror="imgError()"/>
+          <div id="imgError" style="display:none;font-family:var(--mono);font-size:.72rem;color:var(--red);">
+            Görsel oluşturulamadı, tekrar dene.
+          </div>
+        </div>
+      </div>
+    </div>
+    {% else %}
+    <div class="card border-0 shadow-sm h-100 d-flex align-items-center justify-content-center">
+      <div class="text-center py-5 px-4">
+        <div class="display-1 mb-3">📖</div>
+        <h5 class="text-muted">Kelime zinciri hikayesi</h5>
+        <p class="text-muted small">
+          Sol taraftan kelimeler seçip "Hikaye Oluştur" butonuna bas.<br/>
+          Seçilen kelimeler bir hikayede birleştirilecek!
+        </p>
+        <div class="mt-3 p-3 bg-light rounded text-start small">
+          <strong>Örnek:</strong><br/>
+          Brain → Night → Tiger → Robin → Noble<br/>
+          <em class="text-muted">→ Zeki BRAIN, gece NIGHT ormanda bir TIGER ile karşılaştı...</em>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function checkLimit() {
+  const checked = document.querySelectorAll('input[name="word_ids"]:checked');
+  document.getElementById('sel-count').textContent = `${checked.length} kelime seçildi`;
+  if (checked.length >= 8) {
+    document.querySelectorAll('input[name="word_ids"]:not(:checked)').forEach(cb => cb.disabled = true);
+  } else {
+    document.querySelectorAll('input[name="word_ids"]').forEach(cb => cb.disabled = false);
+  }
+}
+checkLimit();
+
+function copyStory() {
+  const text = document.querySelector('.story-text')?.innerText || '';
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = event.target.closest('button');
+    btn.innerHTML = '<i class="bi bi-check me-1"></i>Kopyalandı!';
+    setTimeout(() => btn.innerHTML = '<i class="bi bi-clipboard me-1"></i>Kopyala', 2000);
+  });
+}
+
+function generateImage() {
+  const words = [{% for w in selected_words %}"{{ w.eng_word }}"{% if not loop.last %},{% endif %}{% endfor %}];
+  if (!words.length) return;
+
+  const prompt = words.join(', ') + ', cinematic story scene, detailed illustration, fantasy art style';
+  const seed   = Math.floor(Math.random() * 99999);
+  const url    = '/api/generate-image?prompt=' + encodeURIComponent(prompt) + '&seed=' + seed;
+
+  const btn = document.getElementById('imgBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Oluşturuluyor...';
+
+  document.getElementById('imgArea').style.display = 'block';
+  document.getElementById('imgLoading').style.display = 'block';
+  document.getElementById('storyImg').style.display = 'none';
+  document.getElementById('imgError').style.display = 'none';
+
+  const timeout = setTimeout(() => showImgError(), 65000);
+
+  fetch(url)
+    .then(res => {
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      return res.blob();
+    })
+    .then(blob => {
+      clearTimeout(timeout);
+      const img = document.getElementById('storyImg');
+      img.src = URL.createObjectURL(blob);
+      document.getElementById('imgLoading').style.display = 'none';
+      img.style.display = 'block';
+      btn.disabled = false;
+      btn.innerHTML = '<i class="bi bi-arrow-clockwise me-1"></i>Yenile';
+    })
+    .catch(() => {
+      clearTimeout(timeout);
+      showImgError();
+    });
+}
+
+function showImgError() {
+  document.getElementById('imgLoading').style.display = 'none';
+  document.getElementById('imgError').style.display = 'block';
+  const btn = document.getElementById('imgBtn');
+  btn.disabled = false;
+  btn.innerHTML = '<i class="bi bi-magic me-1"></i>Görsel Oluştur';
+}
+
+function imgLoaded() {}
+function imgError() {}
+</script>
+{% endblock %}

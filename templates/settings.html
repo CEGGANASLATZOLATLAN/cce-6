@@ -1,0 +1,246 @@
+{% extends 'base.html' %}
+{% block title %}Ayarlar{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+<div class="col-lg-6 col-xl-5">
+
+  <!-- ── Header ── -->
+  <div class="mb-5">
+    <div class="eyebrow mb-2">// ayarlar</div>
+    <h2 class="fw-bold mb-0" style="letter-spacing:-.02em;">
+      <i class="bi bi-gear me-2 text-primary"></i>Ayarlar
+    </h2>
+  </div>
+
+  <form method="POST">
+
+    <!-- ── Günlük Kelime ── -->
+    <div class="eyebrow mb-3">[ Günlük Kelime Hedefi ]</div>
+    <div class="st-panel mb-4">
+      <p class="st-desc">Her gün sınava kaç yeni kelime ekleneceğini belirle. Tekrar soruları bu sayıya ek olarak gelir.</p>
+
+      <div class="d-flex align-items-center gap-3 mb-3">
+        <button type="button" class="st-counter-btn" onclick="changeVal(-1)">
+          <i class="bi bi-dash"></i>
+        </button>
+        <input type="number" name="words_per_day" id="wpd"
+               class="st-counter-input"
+               value="{{ user.words_per_day }}" min="1" max="100"/>
+        <button type="button" class="st-counter-btn" onclick="changeVal(1)">
+          <i class="bi bi-plus"></i>
+        </button>
+        <span class="st-unit">kelime / gün</span>
+      </div>
+
+      <div class="d-flex gap-2 flex-wrap">
+        {% for n in [5, 10, 15, 20, 30] %}
+        <button type="button" class="st-preset" onclick="setVal({{ n }})">{{ n }}</button>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- ── Hesap Bilgileri ── -->
+    <div class="eyebrow mb-3">[ Hesap Bilgileri ]</div>
+    <div class="st-panel mb-4">
+      <div class="st-info-row">
+        <span class="st-info-key">Kullanıcı Adı</span>
+        <span class="st-info-val">{{ session.username }}</span>
+      </div>
+      <div class="st-info-row">
+        <span class="st-info-key">E-posta</span>
+        <span class="st-info-val">{{ user.email or '—' }}</span>
+      </div>
+      <div class="st-info-row" style="border:none;">
+        <span class="st-info-key">Üyelik</span>
+        <span class="st-info-val">{{ user.created_at.strftime('%d.%m.%Y') }}</span>
+      </div>
+    </div>
+
+    <!-- ── 6 Sefer Sistemi ── -->
+    <div class="eyebrow mb-3">[ 6 Sefer Sistemi ]</div>
+    <div class="st-panel mb-5">
+      {% set stages = [
+        ('⭐','#94a3b8','1','1 Gün Sonra','İlk doğrudan sonra'),
+        ('🔥','#a78bfa','2','1 Hafta Sonra','Kısa süreli bellek'),
+        ('💫','#67e8f9','3','1 Ay Sonra','Orta vadeli bellek'),
+        ('⚡','#fde68a','4','3 Ay Sonra','Uzun vadeli bellek'),
+        ('🌙','#fdba74','5','6 Ay Sonra','Güçlü pekiştirme'),
+        ('🚀','#818cf8','6','1 Yıl Sonra','Kalıcı öğrenme'),
+        ('✅','#6ee7b7','✓','—','Öğrenildi!')
+      ] %}
+      {% for icon, color, num, time, desc in stages %}
+      <div class="st-stage-row" style="--sc:{{ color }};">
+        <span class="st-stage-icon">{{ icon }}</span>
+        <span class="st-stage-num" style="color:{{ color }};">{{ num }}</span>
+        <span class="st-stage-time">{{ time }}</span>
+        <span class="st-stage-desc">{{ desc }}</span>
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- ── Kaydet ── -->
+    <button type="submit" class="btn btn-primary w-100 mb-3">
+      <i class="bi bi-check-lg me-2"></i>Ayarları Kaydet
+    </button>
+
+  </form>
+
+  <div class="text-center mb-4">
+    <a href="{{ url_for('forgot_password') }}" style="font-family:var(--mono);font-size:.72rem;color:var(--text-muted);">
+      <i class="bi bi-key me-1"></i>Şifremi Değiştir
+    </a>
+  </div>
+
+</div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<style>
+/* ── Panel ── */
+.st-panel {
+  background: rgba(255,255,255,.015);
+  border: 1px solid rgba(255,255,255,.06);
+  border-radius: 12px;
+  padding: 1.3rem 1.4rem;
+}
+.st-desc {
+  font-family: var(--mono);
+  font-size: .72rem;
+  color: var(--text-muted);
+  margin-bottom: 1.2rem;
+  line-height: 1.6;
+}
+
+/* ── Counter ── */
+.st-counter-btn {
+  width: 38px; height: 38px;
+  border-radius: 8px;
+  border: 1px solid rgba(139,92,246,.3);
+  background: rgba(139,92,246,.06);
+  color: var(--accent-light);
+  font-size: 1.1rem;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: background .15s, border-color .15s, transform .15s;
+  flex-shrink: 0;
+}
+.st-counter-btn:hover {
+  background: rgba(139,92,246,.15);
+  border-color: var(--accent);
+  transform: scale(1.08);
+}
+.st-counter-input {
+  width: 80px;
+  text-align: center;
+  font-family: var(--mono);
+  font-size: 1.6rem;
+  font-weight: 900;
+  color: var(--accent-light);
+  background: rgba(139,92,246,.06) !important;
+  border: 1px solid rgba(139,92,246,.25) !important;
+  border-radius: 8px !important;
+  padding: .3rem !important;
+  text-shadow: 0 0 14px rgba(139,92,246,.4);
+}
+.st-counter-input:focus {
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 2px rgba(139,92,246,.2) !important;
+  outline: none;
+}
+/* Remove number arrows */
+.st-counter-input::-webkit-outer-spin-button,
+.st-counter-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.st-counter-input[type=number] { -moz-appearance: textfield; }
+
+.st-unit {
+  font-family: var(--mono);
+  font-size: .65rem;
+  color: var(--text-muted);
+  letter-spacing: .1em;
+}
+.st-preset {
+  font-family: var(--mono);
+  font-size: .7rem;
+  font-weight: 700;
+  padding: .25rem .7rem;
+  border-radius: 5px;
+  border: 1px solid rgba(139,92,246,.2);
+  background: rgba(139,92,246,.04);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: background .15s, border-color .15s, color .15s;
+}
+.st-preset:hover {
+  background: rgba(139,92,246,.12);
+  border-color: var(--accent);
+  color: var(--accent-light);
+}
+
+/* ── Account info ── */
+.st-info-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: .65rem 0;
+  border-bottom: 1px solid rgba(255,255,255,.04);
+}
+.st-info-key {
+  font-family: var(--mono);
+  font-size: .65rem;
+  letter-spacing: .1em;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  width: 110px;
+  flex-shrink: 0;
+}
+.st-info-val {
+  font-size: .88rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* ── Stage rows ── */
+.st-stage-row {
+  display: flex;
+  align-items: center;
+  gap: .8rem;
+  padding: .55rem .3rem;
+  border-bottom: 1px solid rgba(255,255,255,.03);
+  transition: background .15s;
+  border-radius: 5px;
+}
+.st-stage-row:last-child { border-bottom: none; }
+.st-stage-row:hover { background: rgba(255,255,255,.03); }
+.st-stage-icon { font-size: 1rem; width: 22px; text-align: center; flex-shrink: 0; }
+.st-stage-num {
+  font-family: var(--mono);
+  font-size: .72rem;
+  font-weight: 900;
+  width: 18px;
+  flex-shrink: 0;
+}
+.st-stage-time {
+  font-family: var(--mono);
+  font-size: .72rem;
+  color: var(--sc);
+  width: 100px;
+  flex-shrink: 0;
+}
+.st-stage-desc {
+  font-size: .78rem;
+  color: var(--text-muted);
+}
+</style>
+
+<script>
+function changeVal(delta) {
+  const el = document.getElementById('wpd');
+  el.value = Math.max(1, Math.min(100, parseInt(el.value) + delta));
+}
+function setVal(n) {
+  document.getElementById('wpd').value = n;
+}
+</script>
+{% endblock %}
