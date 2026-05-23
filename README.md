@@ -1,75 +1,46 @@
-#  LearnWords — 6 Sefer Kelime Ezberleme Sistemi(Okul projesi)
+# LearnWords — 6 Sefer Kelime Ezberleme Sistemi (Okul projesi)
 
-Scrum metodolojisiyle geliştirilen, aralıklı tekrar (spaced repetition) yöntemiyle
-kalıcı kelime öğrenmeyi sağlayan web uygulaması.
+Scrum metodolojisiyle geliştirilen, aralıklı tekrar (spaced repetition) yöntemiyle kalıcı kelime öğrenmeyi sağlayan web uygulaması.
 
 ## Özellikler
 
-| Story | Açıklama | Puan |
-|-------|----------|------|
-| Story 1 | Kullanıcı Kayıt / Giriş / Şifremi Unuttum | 5 |
-| Story 2 | Kelime Ekleme (resim + örnek cümleler) | 5 |
-| Story 3 | 6 Sefer Sınav Modülü (spaced repetition) | 10 |
-| Story 4 | Günlük kelime sayısı ayarı | 5 |
-| Story 5 | Analiz Raporu (yazdırılabilir) | 5 |
-| Story 6 | Wordle Bulmacası | 15 |
-| Story 7 | Word Chain (hikaye oluşturucu) | 5 |
+Kullanıcı kayıt, giriş ve şifremi unuttum ekranları mevcuttur. Kelime ekleme sırasında resim ve örnek cümleler de eklenebilir. 6 sefer sınav modülü ile spaced repetition algoritması uygulanmaktadır. Günlük kelime sayısı ayarlanabilir. Analiz raporu ekranı yazdırılabilir. Wordle bulmacası ve Word Chain (AI destekli hikaye oluşturucu) özellikleri de bulunmaktadır.
 
 ## Kurulum
 
-```bash
-# 1. Gerekli paketleri kurmak için;
+Önce gerekli paketleri kur:
+
 pip install -r requirements.txt
-```
 
-### API Key'ler (zorunlu)
+## API Key'ler (zorunlu)
 
-Uygulama çalışmak için iki API key'e ihtiyaç duyar. Proje klasöründe `.env` adında bir dosya oluşturup aşağıdaki bilgileri gir:
+Uygulama çalışmak için iki API key'e ihtiyaç duyar. Proje klasöründe .env adında bir dosya oluşturup aşağıdaki bilgileri gir:
 
-```
 ANTHROPIC_API_KEY=sk-ant-api03-...
 HF_TOKEN=hf_...
-```
 
-| Key | Ne için | Nereden alınır |
-|-----|---------|----------------|
-| `ANTHROPIC_API_KEY` | Word Chain'de Türkçe hikaye üretimi (Claude Haiku) | [console.anthropic.com](https://console.anthropic.com) |
-| `HF_TOKEN` | Word Chain'de AI görsel üretimi (FLUX.1-schnell) | [huggingface.co/settings/tokens](https://huggingface.co/settings/tokens) |
+ANTHROPIC_API_KEY, Word Chain özelliğinde Türkçe hikaye üretimi için kullanılır. console.anthropic.com adresinden alınabilir.
 
-> `.env` dosyası `.gitignore`'a eklenmiştir, GitHub'a yüklenmez.
+HF_TOKEN, Word Chain özelliğinde AI görsel üretimi için kullanılır. huggingface.co/settings/tokens adresinden alınabilir.
 
-```bash
-# 2. Uygulamayı başlatmak için;
+.env dosyası .gitignore'a eklenmiştir, GitHub'a yüklenmez.
+
+Uygulamayı başlatmak için:
+
 python app.py
-```
 
-**macOS'ta:** `projeyibaslat.command` dosyasına çift tıklayarak da başlatabilirsin.
+macOS'ta projeyibaslat.command dosyasına çift tıklayarak da başlatabilirsin.
 
-Tarayıcıda aç: **http://localhost:5001** veya **http://127.0.0.1:5001/**
+Tarayıcıda aç: http://localhost:5001
 
 ## 6 Sefer Algoritması
 
-Bir kelimeyi kalıcı öğrenmek için 6 farklı zaman diliminde doğru cevaplanması gerekir:
-
-```
-İlk Doğru → 1 Gün → 1 Hafta → 1 Ay → 3 Ay → 6 Ay → 1 Yıl →  Öğrenildi
-```
-
-Herhangi bir aşamada yanlış cevap verilirse süreç **sıfırdan** başlar.
+Bir kelimeyi kalıcı öğrenmek için 6 farklı zaman diliminde doğru cevaplanması gerekir. Sırasıyla ilk doğru cevabın ardından 1 gün, 1 hafta, 1 ay, 3 ay, 6 ay ve 1 yıl sonra tekrar sorulur. Herhangi bir aşamada yanlış cevap verilirse süreç sıfırdan başlar.
 
 ## Veritabanı Şeması
 
-```
-Users            : UserID, UserName, Password, Email, words_per_day
-Words            : WordID, EngWordName, TurWordName, Picture, Audio
-WordSamples      : WordSamplesID, WordID, Sample
-UserWordProgress : UserID, WordID, Stage(0-6), next_review, is_learned
-QuizAnswers      : UserID, WordID, is_correct, quiz_date, stage_before
-```
+Users tablosu kullanıcı bilgilerini tutar. Words tablosu kelime çiftlerini, görselleri ve sesleri saklar. WordSamples tablosu her kelimeye ait örnek cümleleri içerir. UserWordProgress tablosu her kullanıcının her kelime için bulunduğu aşamayı ve sonraki tekrar tarihini takip eder. QuizAnswers tablosu ise sınav geçmişini kaydeder.
 
 ## Teknolojiler
 
-- **Backend:**    Python / Flask
-- **Veritabanı:** SQLite (SQLAlchemy ORM)
-- **Frontend:**   Bootstrap 5, Vanilla JS
-- **Şifreleme:**  Werkzeug (bcrypt hash)
+Backend Python ve Flask ile yazılmıştır. Veritabanı olarak SQLite kullanılmakta, SQLAlchemy ORM ile yönetilmektedir. Frontend Bootstrap 5 ve Vanilla JS ile geliştirilmiştir. Şifreleme için Werkzeug bcrypt hash kullanılmaktadır. AI özellikleri için Anthropic Claude ve HuggingFace FLUX entegre edilmiştir.
