@@ -1,7 +1,3 @@
-# LearnWords — 6 Sefer Kelime Ezberleme Sistemi (Okul projesi)
-
-İngilizce kelime ezberlemek için yaptığım bir web uygulaması. Scrum metodolojisiyle geliştirdim, aralıklı tekrar (spaced repetition) yöntemiyle çalışıyor. Yani bir kelimeyi bir kez görüp geçmiyorsun, sistem seni doğru zamanlarda tekrar sınıyor.
-
 ## Ne yapıyor?
 
 Kullanıcı kaydı ve girişi var. Kelime eklerken resim ve örnek cümleler de ekleyebiliyorsun. 6 aşamalı sınav sistemiyle kelimeleri kalıcı öğreniyorsun. Günlük kaç kelime çalışacağını kendin ayarlayabiliyorsun. Analiz ekranından gelişimini görebilir, yazdırabilirsin. Ayrıca eğlenmek için Wordle bulmacası ve AI destekli Word Chain (kelimelerden hikaye oluşturucu) de var.
