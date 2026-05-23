@@ -19,11 +19,31 @@ kalıcı kelime öğrenmeyi sağlayan web uygulaması.
 
 ```bash
 # 1. Gerekli paketleri kurmak için;
-pip install flask flask-sqlalchemy werkzeug
+pip install -r requirements.txt
+```
 
+### API Key'ler (zorunlu)
+
+Uygulama çalışmak için iki API key'e ihtiyaç duyar. Proje klasöründe `.env` adında bir dosya oluşturup aşağıdaki bilgileri gir:
+
+```
+ANTHROPIC_API_KEY=sk-ant-api03-...
+HF_TOKEN=hf_...
+```
+
+| Key | Ne için | Nereden alınır |
+|-----|---------|----------------|
+| `ANTHROPIC_API_KEY` | Word Chain'de Türkçe hikaye üretimi (Claude Haiku) | [console.anthropic.com](https://console.anthropic.com) |
+| `HF_TOKEN` | Word Chain'de AI görsel üretimi (FLUX.1-schnell) | [huggingface.co/settings/tokens](https://huggingface.co/settings/tokens) |
+
+> `.env` dosyası `.gitignore`'a eklenmiştir, GitHub'a yüklenmez.
+
+```bash
 # 2. Uygulamayı başlatmak için;
 python app.py
 ```
+
+**macOS'ta:** `projeyibaslat.command` dosyasına çift tıklayarak da başlatabilirsin.
 
 Tarayıcıda aç: **http://localhost:5001** veya **http://127.0.0.1:5001/**
 
