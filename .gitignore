@@ -1,7 +1,7 @@
-venv/
-__pycache__/
 *.pyc
-instance/words.db
-static/uploads/words/
-nohup.out
 .env
+__pycache__/
+instance/words.db
+nohup.out
+static/uploads/words/
+venv/

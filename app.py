@@ -7,6 +7,13 @@ from datetime import date, datetime, timedelta
 from functools import wraps
 import os, random, json, urllib.parse, requests as req_lib
 
+# .env dosyasını oku
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
+
 # ── App & Config ───────────────────────────────────────────────────────────────
 _DB_URI = 'sqlite:///' + os.path.join(os.path.dirname(os.path.abspath(__file__)), 'instance', 'words.db')
 
@@ -560,23 +567,51 @@ def wordle():
 
 # ── Word Chain ─────────────────────────────────────────────────────────────────
 
+_image_cache = {}
+
 @app.route('/api/generate-image')
 @login_required
 def generate_image_proxy():
-    import time
+    import time, hashlib
     prompt = request.args.get('prompt', 'fantasy scene')
     seed   = request.args.get('seed', '1')
-    models = ['flux', 'turbo', 'flux-realism']
-    for model in models:
-        url = (f"https://image.pollinations.ai/prompt/{urllib.parse.quote(prompt)}"
-               f"?model={model}&nologo=true&width=800&height=420&seed={seed}&nofeed=true")
+
+    cache_key = hashlib.md5((prompt + seed).encode()).hexdigest()
+    now = time.time()
+    if cache_key in _image_cache:
+        ts, content, mime = _image_cache[cache_key]
+        if now - ts < 600:
+            return Response(content, mimetype=mime)
+
+    hf_token = os.environ.get('HF_TOKEN', '')
+    hf_models = [
+        'black-forest-labs/FLUX.1-schnell',
+        'black-forest-labs/FLUX.1-dev',
+    ]
+    hdrs = {
+        'Authorization': f'Bearer {hf_token}',
+        'Content-Type': 'application/json',
+    }
+    payload = json.dumps({'inputs': prompt})
+
+    for model in hf_models:
+        url = f'https://router.huggingface.co/hf-inference/models/{model}'
         try:
-            r = req_lib.get(url, timeout=60, headers={'User-Agent': 'Mozilla/5.0'})
+            r = req_lib.post(url, headers=hdrs, data=payload, timeout=60)
             if r.status_code == 200 and len(r.content) > 1000:
-                return Response(r.content, mimetype=r.headers.get('content-type','image/jpeg'))
+                mime = r.headers.get('content-type', 'image/jpeg')
+                _image_cache[cache_key] = (now, r.content, mime)
+                return Response(r.content, mimetype=mime)
+            elif r.status_code == 503:
+                time.sleep(8)
+                r2 = req_lib.post(url, headers=hdrs, data=payload, timeout=60)
+                if r2.status_code == 200 and len(r2.content) > 1000:
+                    mime = r2.headers.get('content-type', 'image/jpeg')
+                    _image_cache[cache_key] = (now, r2.content, mime)
+                    return Response(r2.content, mimetype=mime)
         except Exception:
             pass
-        time.sleep(1)
+
     return ('Görsel oluşturulamadı', 500)
 
 @app.route('/word-chain', methods=['GET', 'POST'])
@@ -610,32 +645,42 @@ def _generate_story(words):
             wstr   = ', '.join(word_list)
             msg    = client.messages.create(
                 model='claude-haiku-4-5-20251001',
-                max_tokens=600,
+                max_tokens=900,
                 messages=[{'role': 'user', 'content': (
-                    f"Write a vivid, memorable story in English using ALL of these words: {wstr}.\n"
-                    f"Rules:\n"
-                    f"- Each word must appear EXACTLY ONCE, written in ALL CAPS.\n"
-                    f"- Do NOT treat every word as a person's name or proper noun. "
-                    f"Use them naturally: as nouns, verbs, adjectives, or adverbs depending on meaning.\n"
-                    f"- Every sentence must have a DIFFERENT structure: "
-                    f"mix short punchy sentences, longer descriptive ones, questions, "
-                    f"dialogue, action sentences, and reflective sentences.\n"
-                    f"- The story must flow naturally as a narrative, not as a list.\n"
-                    f"- Length: {len(word_list) + 2} to {len(word_list) + 4} sentences total."
+                    f"İki şey yap ve SADECE geçerli JSON döndür, başka hiçbir şey yazma.\n\n"
+                    f"1. Şu İngilizce kelimelerin TÜMÜNÜ kullanan akıcı, etkileyici bir hikaye yaz TÜRKÇE olarak: {wstr}.\n"
+                    f"   Kurallar:\n"
+                    f"   - Her İngilizce kelime hikayede BÜYÜK HARFLE (ALL CAPS) tam olarak BİR KEZ geçmeli.\n"
+                    f"   - Kelimeleri doğal kullan: isim, fiil, sıfat olarak; hepsini özel isim yapma.\n"
+                    f"   - Cümle yapılarını çeşitlendir: kısa vurucu, uzun betimleyici, diyalog, soru.\n"
+                    f"   - Uzunluk: {len(word_list) + 2} ile {len(word_list) + 4} cümle.\n\n"
+                    f"2. Bu hikayenin atmosferini yansıtan, görsel ve sinematik bir Stable Diffusion görsel promptu yaz "
+                    f"(İNGİLİZCE, max 40 kelime, virgülle ayrılmış görsel tanımlayıcılar).\n\n"
+                    f"JSON formatı: {{\"story\": \"...\", \"image_prompt\": \"...\"}}"
                 )}],
             )
+            raw = msg.content[0].text.strip()
+            # JSON parse et
+            import re as _re
+            m = _re.search(r'\{.*\}', raw, _re.DOTALL)
+            parsed = json.loads(m.group()) if m else {}
+            story_text   = parsed.get('story', raw)
+            image_prompt = parsed.get('image_prompt', wstr + ', cinematic scene, fantasy art')
+            image_prompt = ' '.join(image_prompt.split())  # satır sonlarını ve fazla boşlukları temizle
             return {
-                'text': msg.content[0].text,
+                'text': story_text,
                 'words': word_list,
                 'translations': translations,
                 'ai': True,
+                'image_prompt': image_prompt,
             }
     except Exception:
         pass
 
     # Fallback: varied sentence templates — each word gets a different sentence structure
     return {'text': _varied_template(word_list), 'words': word_list,
-            'translations': translations, 'ai': False}
+            'translations': translations, 'ai': False,
+            'image_prompt': ', '.join(word_list) + ', cinematic story scene, detailed illustration, fantasy art style'}
 
 
 _STORY_STYLES = [

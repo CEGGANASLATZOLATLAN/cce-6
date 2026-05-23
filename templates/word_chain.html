@@ -91,11 +91,10 @@
         <div id="imgArea" class="mt-4" style="display:none;">
           <div id="imgLoading" class="text-center py-4" style="display:none;">
             <div class="spinner-border spinner-border-sm text-warning me-2"></div>
-            <span style="font-family:var(--mono);font-size:.75rem;color:var(--text-muted);">Görsel oluşturuluyor...</span>
+            <span style="font-family:var(--mono);font-size:.75rem;color:var(--text-muted);">Görsel oluşturuluyor... (10-15 sn sürebilir)</span>
           </div>
           <img id="storyImg" src="" alt="AI Görseli"
-               style="width:100%;border-radius:10px;display:none;border:1px solid var(--border);"
-               onload="imgLoaded()" onerror="imgError()"/>
+               style="width:100%;border-radius:10px;display:none;border:1px solid var(--border);"/>
           <div id="imgError" style="display:none;font-family:var(--mono);font-size:.72rem;color:var(--red);">
             Görsel oluşturulamadı, tekrar dene.
           </div>
@@ -149,10 +148,8 @@ function generateImage() {
   const words = [{% for w in selected_words %}"{{ w.eng_word }}"{% if not loop.last %},{% endif %}{% endfor %}];
   if (!words.length) return;
 
-  const prompt = words.join(', ') + ', cinematic story scene, detailed illustration, fantasy art style';
-  const seed   = Math.floor(Math.random() * 99999);
-  const url    = '/api/generate-image?prompt=' + encodeURIComponent(prompt) + '&seed=' + seed;
-
+  const aiPrompt = {{ (story.image_prompt if story and story.image_prompt else '') | tojson }};
+  const prompt = aiPrompt || (words.join(', ') + ', cinematic story scene, detailed illustration, fantasy art style');
   const btn = document.getElementById('imgBtn');
   btn.disabled = true;
   btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Oluşturuluyor...';
@@ -162,24 +159,46 @@ function generateImage() {
   document.getElementById('storyImg').style.display = 'none';
   document.getElementById('imgError').style.display = 'none';
 
-  const timeout = setTimeout(() => showImgError(), 65000);
+  function showSuccess(src, isBlob) {
+    const imgEl = document.getElementById('storyImg');
+    imgEl.onload = function() {
+      document.getElementById('imgLoading').style.display = 'none';
+      imgEl.style.display = 'block';
+      btn.disabled = false;
+      btn.innerHTML = '<i class="bi bi-arrow-clockwise me-1"></i>Yenile';
+    };
+    imgEl.onerror = showImgError;
+    imgEl.src = src;
+  }
 
-  fetch(url)
+  function tryWiki() {
+    let idx = 0;
+    function nextWord() {
+      if (idx >= words.length) { showImgError(); return; }
+      const w = words[idx++];
+      fetch('https://en.wikipedia.org/api/rest_v1/page/summary/' + encodeURIComponent(w))
+        .then(r => r.json())
+        .then(data => {
+          const src = (data.thumbnail || data.originalimage || {}).source;
+          if (!src) { nextWord(); return; }
+          document.querySelector('#imgLoading span').textContent = 'Görsel yükleniyor...';
+          showSuccess(src, false);
+        })
+        .catch(nextWord);
+    }
+    nextWord();
+  }
+
+  const seed = Math.floor(Math.random() * 99999);
+  fetch('/api/generate-image?seed=' + seed + '&prompt=' + encodeURIComponent(prompt))
     .then(res => {
-      if (!res.ok) throw new Error('HTTP ' + res.status);
+      if (!res.ok) throw new Error(res.status);
       return res.blob();
     })
     .then(blob => {
-      clearTimeout(timeout);
-      const img = document.getElementById('storyImg');
-      img.src = URL.createObjectURL(blob);
-      document.getElementById('imgLoading').style.display = 'none';
-      img.style.display = 'block';
-      btn.disabled = false;
-      btn.innerHTML = '<i class="bi bi-arrow-clockwise me-1"></i>Yenile';
+      showSuccess(URL.createObjectURL(blob), true);
     })
     .catch(() => {
-      clearTimeout(timeout);
       showImgError();
     });
 }
@@ -191,8 +210,5 @@ function showImgError() {
   btn.disabled = false;
   btn.innerHTML = '<i class="bi bi-magic me-1"></i>Görsel Oluştur';
 }
-
-function imgLoaded() {}
-function imgError() {}
 </script>
 {% endblock %}
