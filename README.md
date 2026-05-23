@@ -1,7 +1,3 @@
-# LearnWords — 6 Sefer Kelime Ezberleme Sistemi (Okul projesi)
-
-Scrum metodolojisiyle geliştirilen, aralıklı tekrar (spaced repetition) yöntemiyle kalıcı kelime öğrenmeyi sağlayan web uygulaması.
-
 ## Özellikler
 
 Kullanıcı kayıt, giriş ve şifremi unuttum ekranları mevcuttur. Kelime ekleme sırasında resim ve örnek cümleler de eklenebilir. 6 sefer sınav modülü ile spaced repetition algoritması uygulanmaktadır. Günlük kelime sayısı ayarlanabilir. Analiz raporu ekranı yazdırılabilir. Wordle bulmacası ve Word Chain (AI destekli hikaye oluşturucu) özellikleri de bulunmaktadır.
@@ -28,6 +24,9 @@ ANTHROPIC_API_KEY, Word Chain özelliğinde Türkçe hikaye üretimi için kulla
 HF_TOKEN, Word Chain özelliğinde AI görsel üretimi için kullanılır. huggingface.co/settings/tokens adresinden alınabilir.
 
 .env dosyası .gitignore'a eklenmiştir, GitHub'a yüklenmez.
+
+Anthropic API Key ücretlidir.
+Hugging Face API Key "1$" kredi vermektedir.
 
 Uygulamayı başlatmak için:
 
