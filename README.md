@@ -10,14 +10,18 @@ Kullanıcı kayıt, giriş ve şifremi unuttum ekranları mevcuttur. Kelime ekle
 
 Önce gerekli paketleri kur:
 
+```
 pip install -r requirements.txt
+```
 
 ## API Key'ler (zorunlu)
 
 Uygulama çalışmak için iki API key'e ihtiyaç duyar. Proje klasöründe .env adında bir dosya oluşturup aşağıdaki bilgileri gir:
 
+```
 ANTHROPIC_API_KEY=sk-ant-api03-...
 HF_TOKEN=hf_...
+```
 
 ANTHROPIC_API_KEY, Word Chain özelliğinde Türkçe hikaye üretimi için kullanılır. console.anthropic.com adresinden alınabilir.
 
@@ -27,7 +31,9 @@ HF_TOKEN, Word Chain özelliğinde AI görsel üretimi için kullanılır. huggi
 
 Uygulamayı başlatmak için:
 
+```
 python app.py
+```
 
 macOS'ta projeyibaslat.command dosyasına çift tıklayarak da başlatabilirsin.
 
