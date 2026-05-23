@@ -617,7 +617,7 @@ def generate_image_proxy():
 @app.route('/word-chain', methods=['GET', 'POST'])
 @login_required
 def word_chain():
-    all_words     = Word.query.order_by(Word.eng_word).all()
+    all_words = Word.query.order_by(Word.eng_word).all()
     story         = None
     selected_words = []
 
@@ -625,9 +625,23 @@ def word_chain():
         ids = request.form.getlist('word_ids')
         if len(ids) < 3:
             flash('En az 3 kelime seçmelisiniz.', 'warning')
+            # Önceki seçimi koru
+            prev_ids = session.get('wc_ids', [])
+            if prev_ids:
+                selected_words = Word.query.filter(Word.id.in_(prev_ids)).all()
+                story = session.get('wc_story')
         else:
             selected_words = Word.query.filter(Word.id.in_(ids)).all()
             story = _generate_story(selected_words)
+            # Session'a kaydet
+            session['wc_ids']   = [int(i) for i in ids]
+            session['wc_story'] = story
+    else:
+        # GET: session'dan önceki hikayeyi geri yükle
+        prev_ids = session.get('wc_ids', [])
+        if prev_ids:
+            selected_words = Word.query.filter(Word.id.in_(prev_ids)).all()
+            story = session.get('wc_story')
 
     return render_template('word_chain.html',
         all_words=all_words, story=story, selected_words=selected_words)
