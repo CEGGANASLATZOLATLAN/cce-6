@@ -1,12 +1,12 @@
 """
-cegganaslatzolatlan kullanıcısına 35 günlük gerçekçi kullanım verisi ekler.
+testuser kullanıcısına 35 günlük gerçekçi kullanım verisi ekler.
 """
 import random
 from datetime import date, datetime, timedelta
 from app import app, db, User, Word, UserWordProgress, QuizAnswer
 
 STAGE_DAYS = {1: 1, 2: 7, 3: 30, 4: 90, 5: 180, 6: 365}
-USERNAME   = 'cegganaslatzolatlan'
+USERNAME   = 'testuser'
 DAYS_BACK  = 35   # kaç gün geçmişi simüle edelim
 TODAY      = date.today()
 
