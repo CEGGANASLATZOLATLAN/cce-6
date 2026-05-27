@@ -1,3 +1,4 @@
+#kütüphaneleri dahil edelim
 from flask import (Flask, render_template, redirect, url_for, request,
                    session, flash, jsonify, make_response, Response)
 from flask_sqlalchemy import SQLAlchemy
@@ -7,7 +8,7 @@ from datetime import date, datetime, timedelta
 from functools import wraps
 import os, random, json, urllib.parse, requests as req_lib
 
-# .env dosyasını oku
+# .env dosyasını oku (github üzerinden çekecekseniz oluşturmanız gerekebilir.)
 try:
     from dotenv import load_dotenv
     load_dotenv()
