@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #kütüphaneleri dahil edelim
 from flask import (Flask, render_template, redirect, url_for, request,
                    session, flash, jsonify, make_response, Response)
