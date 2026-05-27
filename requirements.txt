@@ -1,0 +1,17 @@
+# Web framework
+flask>=3.0.3
+
+# Database ORM
+flask-sqlalchemy>=3.1.1
+
+# Password hashing and file utilities
+werkzeug>=3.0.3
+
+# Anthropic Claude API (story generation)
+anthropic>=0.100.0
+
+# Load environment variables from .env file
+python-dotenv>=1.0.0
+
+# HTTP requests (HuggingFace image generation)
+requests>=2.32.0
