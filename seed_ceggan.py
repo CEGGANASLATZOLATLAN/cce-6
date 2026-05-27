@@ -1,6 +1,3 @@
-"""
-cegganaslatzolatlan kullanıcısına 35 günlük gerçekçi kullanım verisi ekler.
-"""
 import random
 from datetime import date, datetime, timedelta
 from app import app, db, User, Word, UserWordProgress, QuizAnswer
