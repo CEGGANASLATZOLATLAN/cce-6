@@ -5,3 +5,4 @@ instance/words.db
 nohup.out
 static/uploads/words/
 venv/
+.claude/
