@@ -25,8 +25,6 @@ ANTHROPIC_API_KEY olmadan hikaye oluşturmuyor. console.anthropic.com adresinden
 
 HF_TOKEN olmadan görsel oluşturmuyor. huggingface.co/settings/tokens adresinden alabilirsin. Hugging Face API Key "1$" kredi vermektedir.
 
-Bu .env dosyası .gitignore'da olduğu için GitHub'a yüklenmiyor, merak etme.
-
 ## Başlatmak için
 
 ```
